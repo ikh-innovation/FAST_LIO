@@ -1,0 +1,23 @@
+<launch>
+
+    <arg name="project" default="fast_lio"/>
+    <arg name="imu_topic" default="imu_correct"/>
+    <arg name="gps_topic" default="gps/fix"/>
+
+    <!-- <env name="ROSCONSOLE_CONFIG_FILE" value="$(find lio_sam)/launch/include/rosconsole/rosconsole_error.conf"/> -->
+    
+    <!-- EKF GPS-->
+    <node pkg="robot_localization" type="ekf_localization_node" output="screen" name="ekf_gps" respawn="true">
+        <remap from="odometry/filtered" to="odometry/navsat" />
+    </node>
+
+    <!-- Navsat -->
+    <node pkg="robot_localization" type="navsat_transform_node" output="screen" name="navsat" respawn="true">
+        <!-- <rosparam param="datum">[42.35893211, -71.09345588, 0.0, world, base_link]</rosparam> -->
+        <!-- <rosparam param="datum">[48.9851176155, 8.39399876679, 0.0, map, base_link]</rosparam> -->
+        <remap from="imu/data" to="$(arg imu_topic)" />
+        <remap from="gps/fix" to="$(arg gps_topic)" />
+        <remap from="odometry/filtered" to="odometry/navsat" />
+    </node>
+
+</launch>

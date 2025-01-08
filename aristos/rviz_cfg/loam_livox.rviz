@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /mapping1
         - /mapping1/surround1
         - /mapping1/currPoints1
         - /mapping1/currPoints1/Autocompute Value Bounds1
@@ -15,11 +14,8 @@ Panels:
         - /Odometry1/Odometry1/Covariance1/Position1
         - /Odometry1/Odometry1/Covariance1/Orientation1
         - /MarkerArray1/Namespaces1
-        - /TF1
-        - /Odometry2
         - /Odometry2/Shape1
         - /Odometry3/Shape1
-        - /Odometry4
         - /Odometry4/Shape1
       Splitter Ratio: 0.6432291865348816
     Tree Height: 810
@@ -331,7 +327,7 @@ Visualization Manager:
           Value: true
       Marker Scale: 10
       Name: TF
-      Show Arrows: true
+      Show Arrows: false
       Show Axes: true
       Show Names: false
       Tree:
@@ -380,7 +376,7 @@ Visualization Manager:
         Shaft Length: 0
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /Odometry
+      Topic: /aristos/Odometry
       Unreliable: false
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -414,7 +410,7 @@ Visualization Manager:
         Shaft Length: 0
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /aristos/odometry/navsat
+      Topic: /aristos/odometry/onlyRTK
       Unreliable: false
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -478,21 +474,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -0.13500022888183594
-      Class: rviz/TopDownOrtho
+      Class: rviz/Orbit
+      Distance: 15.815865516662598
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Focal Point:
+        X: -88.72223663330078
+        Y: 24.72853660583496
+        Z: 1.0380628108978271
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 75.14569854736328
+      Pitch: 1.5697963237762451
       Target Frame: global
-      Value: TopDownOrtho (rviz)
-      X: -80.44786834716797
-      Y: 23.715471267700195
+      Value: Orbit (rviz)
+      Yaw: 4.633151531219482
     Saved: ~
 Window Geometry:
   Displays:

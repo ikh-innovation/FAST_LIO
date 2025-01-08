@@ -11,6 +11,10 @@
 			<param name="test_name" value="$(arg test_name)" />
 		</rosparam>
 
+		<rosparam file="$(find fast_lio)/aristos/config/ekf_local.yaml" command="load" subst_value="True">
+			<param name="test_name" value="$(arg test_name)" />
+		</rosparam>
+
 		<rosparam command="load" file="$(find fast_lio)/aristos/config/mid360.yaml" />
 
 		<param name="feature_extract_enable" type="bool" value="0"/>

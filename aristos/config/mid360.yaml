@@ -27,12 +27,16 @@ mapping:
     fov_degree:    360
     det_range:     100.0
     extrinsic_est_en:  false      # true: enable the online estimation of IMU-LiDAR extrinsic
-    
+
     #DOMOKOS extrinsics
     extrinsic_T: [0.209, 0.008, 0.420]
-    extrinsic_R: [-1, 0, 0,
-                    0, -1, 0,
-                    0, 0, 1]     
+    # extrinsic_R: [-1, 0, 0,
+    #                 0, -1, 0,
+    #                 0, 0, 1]     
+    # -0.02563 rad pitch
+    extrinsic_R: [  -0.9996716, -0.0000926, -0.0256272,
+                    0.0000927, -1.0000000,  0.0000000,
+                    -0.0256272, -0.0000024,  0.9996716 ]
 
 publish:
     path_en:  false

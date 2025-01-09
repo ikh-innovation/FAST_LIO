@@ -3,6 +3,7 @@
 
 	<arg name="rviz" default="true" />
 	<arg name="test_name" default="aristos" />
+	<arg name="fast_lio_publish_tf" default="false" />
 
    <group ns="$(arg test_name)">
 
@@ -15,11 +16,14 @@
 			<param name="test_name" value="$(arg test_name)" />
 		</rosparam>
 
-		<rosparam command="load" file="$(find fast_lio)/aristos/config/mid360.yaml" />
+		<rosparam file="$(find fast_lio)/aristos/config/mid360.yaml"  command="load" subst_value="True">
+			<param name="fast_lio_publish_tf" value="$(arg fast_lio_publish_tf)" />
+		</rosparam>
 
 		<param name="feature_extract_enable" type="bool" value="0"/>
 		<param name="point_filter_num" type="int" value="3"/>
 		<param name="max_iteration" type="int" value="3" />
+		<param name="filter_size_corner" type="double" value="0.5" /> <!-- default --> 
 		<param name="filter_size_surf" type="double" value="0.5" />
 		<param name="filter_size_map" type="double" value="0.5" />
 		<param name="cube_side_length" type="double" value="1000" />
@@ -37,6 +41,7 @@
 		<include file="$(find fast_lio)/aristos/launch/module_navsat.launch" >
 			<arg name="imu_topic" default="imu_raw"/>
 			<arg name="gps_topic" default="gps/fix"/>
+			<arg name="fast_lio_publish_tf" default="$(arg fast_lio_publish_tf)"/>
 		</include>
 
 		<!-- Multiple maps node -->

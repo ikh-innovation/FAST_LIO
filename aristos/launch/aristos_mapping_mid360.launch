@@ -3,7 +3,7 @@
 
 	<arg name="rviz" default="true" />
 	<arg name="test_name" default="aristos" />
-	<arg name="fast_lio_publish_tf" default="false" />
+	<arg name="fast_lio_publish_tf" default="true" />
 
    <group ns="$(arg test_name)">
 

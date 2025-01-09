@@ -5,6 +5,11 @@ common:
     imu_topic:  "/aristos/imu_raw" 
     init_frame: "aristos/odom"
     body_frame: "aristos/base_link"
+    # It seems that FAST-LIO returns the IMU frame, thus setting the body_frame as the imu_link is the correct.
+    # This requires that FAST-LIO does not publish to /tf and a local ekf creates the transform odom->base_link, i.e.,  fast_lio_publish_tf: false
+    # However, for practical reasons of aristos application base_link and imu_link does not make difference, 
+    # hence body_frame: "aristos/base_link" && fast_lio_publish_tf: true remain the default
+    # body_frame: "aristos/imu_link" # if fast_lio_publish_tf == false
     time_sync_en: false         # ONLY turn on when external time synchronization is really not possible
     time_offset_lidar_to_imu: 0.0 # Time offset between lidar and IMU calibrated by other algorithms, e.g. LI-Init (can be found in README).
                                   # This param will take effect no matter what time_sync_en is. So if the time offset is not known exactly, please set as 0.0
@@ -22,14 +27,12 @@ mapping:
     fov_degree:    360
     det_range:     100.0
     extrinsic_est_en:  false      # true: enable the online estimation of IMU-LiDAR extrinsic
-    # extrinsic_T: [ -0.011, -0.02329, 0.04412 ]
-    # extrinsic_R: [ 1, 0, 0,
-    #                0, 1, 0,
-    #                0, 0, 1]
-    extrinsic_T: [0.209, 0.008, -0.420]
+    
+    #DOMOKOS extrinsics
+    extrinsic_T: [0.209, 0.008, 0.420]
     extrinsic_R: [-1, 0, 0,
                     0, -1, 0,
-                    0, 0, 1]       
+                    0, 0, 1]     
 
 publish:
     path_en:  false

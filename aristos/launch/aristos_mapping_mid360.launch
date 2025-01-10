@@ -6,6 +6,9 @@
 	<arg name="fast_lio_publish_tf" default="false" />
 	<arg name="global_ekf" default="true" />
 
+	<arg name="record" default="false" />
+	<arg name="rosbag_name" default="fami_tf0_glb1_rtk1_ldr0_whl1_swcRTK" />
+
    <group ns="$(arg test_name)">
 
 		<!-- Parameters -->
@@ -56,6 +59,11 @@
 		<include file="$(find fast_lio)/aristos/launch/module_robot_state_publisher.launch" >
 			<arg name="test_name" default="$(arg test_name)"/>
 		</include>
+
+		<!--- Rosbag record -->
+ 		<node pkg="rosbag" type="record" name="rosbag_record"
+       		args="record -o /home/aristos/catkin_ws/bags/comparison/$(arg rosbag_name) /$(arg test_name)/Odometry /$(arg test_name)/ground_truth /$(arg test_name)/odometry/navsat /$(arg test_name)/odometry/onlyRTK /$(arg test_name)/wheel/odom"
+       if="$(arg record)" />
 
 		<!-- <node pkg="tf" type="static_transform_publisher" name="static_publisher" args="-75.9292962362 52.8949042433 0 0 0 -0.264  0.967  /map /camera_init  100"/> -->
     </group>

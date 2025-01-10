@@ -5,6 +5,7 @@
 	<arg name="test_name" default="aristos" />
 	<arg name="fast_lio_publish_tf" default="false" />
 	<arg name="global_ekf" default="true" />
+	<arg name="localization_type" default="legacy" /> <!-- lidar, legacy -->
 
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="fami_tf0_glb1_rtk1_ldr0_whl1_swcRTK" />
@@ -12,11 +13,11 @@
    <group ns="$(arg test_name)">
 
 		<!-- Parameters -->
-		<rosparam file="$(find fast_lio)/aristos/config/ekf_global.yaml" command="load" subst_value="True">
+		<rosparam file="$(find fast_lio)/aristos/config/ekf_global_$(arg localization_type).yaml" command="load" subst_value="True">
 			<param name="test_name" value="$(arg test_name)" />
 		</rosparam>
 
-		<rosparam file="$(find fast_lio)/aristos/config/ekf_local.yaml" command="load" subst_value="True">
+		<rosparam file="$(find fast_lio)/aristos/config/ekf_local_$(arg localization_type).yaml" command="load" subst_value="True">
 			<param name="test_name" value="$(arg test_name)" />
 		</rosparam>
 

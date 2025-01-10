@@ -35,6 +35,18 @@ ekf_local:
   odom0_differential: false
   odom0_queue_size: 10
 
+  # -------------------------------------
+  # Wheel Odometry 
+  # -------------------------------------
+  # odom1: wheel/odom
+  # odom1_config: [true,  true,  true,
+  #                false, false,  true,
+  #                false, false, false,
+  #                false, false, false,
+  #                false, false, false]
+  # odom1_differential: true
+  # odom1_queue_size: 10
+
   #                            x     y     z     r     p     y   x_dot  y_dot  z_dot  r_dot p_dot y_dot x_ddot y_ddot z_ddot
   process_noise_covariance: [  1.0,  0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,    0,    0,      0,
                                0,    1.0,  0,    0,    0,    0,    0,     0,     0,     0,    0,    0,    0,    0,      0,

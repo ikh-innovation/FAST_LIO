@@ -1,0 +1,60 @@
+ekf_local:
+  frequency: 30
+  two_d_mode: true
+  sensor_timeout: 0.03
+  transform_timeout: 0.02
+  print_diagnostics: true
+  predict_to_current_time: true
+  dynamic_process_noise_covariance: true
+  publish_tf: true
+  
+  acceleration_limits: [0.8, 0.0, 0.0, 0.0, 0.0, 1.5]
+  
+  map_frame: map
+  odom_frame: $(arg test_name)/odom
+  base_link_frame: $(arg test_name)/base_link
+  world_frame: $(arg test_name)/odom
+
+  #====================================
+
+  odom0: wheel/odom
+  odom0_config: [false, false, false,  
+                 false, false, false, 
+                 true, true, false,  
+                 false, false, false, 
+                 false, false, false]
+  odom0_queue_size: 30
+  odom0_relative: false
+  # odom0_differential: true
+  odom0_nodelay: true
+
+  #====================================
+
+  imu0: imu_raw
+  imu0_config: [false, false, false,
+                false,  false,  true,
+                false, false, false,
+                false,  false,  true,
+                false,  false,  false]
+  imu0_queue_size: 30
+  imu0_remove_gravitational_acceleration: true
+  imu0_relative: true
+  imu0_differential: false
+  imu0_nodelay: true
+
+
+  initial_estimate_covariance: [1e-9, 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                0,    1e-9, 0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                0,    0,    1e-9, 0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                0,    0,    0,    1e-9,  0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                0,    0,    0,    0,    1e-9,  0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                0,    0,    0,    0,    0,    1e-9, 0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                0,    0,    0,    0,    0,    0,    1e-9,  0,    0,    0,     0,     0,     0,    0,    0,
+                                0,    0,    0,    0,    0,    0,    0,    1e-9,  0,    0,     0,     0,     0,    0,    0,
+                                0,    0,    0,    0,    0,    0,    0,    0,    1e-9,  0,     0,     0,     0,    0,    0,
+                                0,    0,    0,    0,    0,    0,    0,    0,    0,    1e-9,   0,     0,     0,    0,    0,
+                                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     1e-9,   0,     0,    0,    0,
+                                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     1e-9,   0,    0,    0,
+                                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     1.0,  0,    0,
+                                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    1.0,  0,
+                                0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    1.0]

@@ -4,6 +4,7 @@
     <arg name="imu_topic" default="imu_correct"/>
     <arg name="gps_topic" default="gps/fix"/>
     <arg name="fast_lio_publish_tf" default="false" />
+    <arg name="global_ekf" default="true" />
 
     <!-- <env name="ROSCONSOLE_CONFIG_FILE" value="$(find lio_sam)/launch/include/rosconsole/rosconsole_error.conf"/> -->
     
@@ -15,9 +16,11 @@
     </group>
 
     <!-- EKF GPS-->
-    <node pkg="robot_localization" type="ekf_localization_node" output="screen" name="ekf_gps" respawn="true">
-        <remap from="odometry/filtered" to="odometry/navsat" />
-    </node>
+    <group if="$(arg global_ekf)">
+        <node pkg="robot_localization" type="ekf_localization_node" output="screen" name="ekf_gps" respawn="true">
+            <remap from="odometry/filtered" to="odometry/navsat" />
+        </node>
+    </group>
 
     <!-- Navsat (in case odometry/gps is used and not odemetry/onlyRTK)-->
     <!-- <node pkg="robot_localization" type="navsat_transform_node" output="screen" name="navsat" respawn="true">

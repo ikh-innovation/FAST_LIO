@@ -5,10 +5,11 @@
 	<arg name="test_name" default="aristos" />
 	<arg name="fast_lio_publish_tf" default="false" />
 	<arg name="global_ekf" default="true" />
-	<arg name="localization_type" default="legacy" /> <!-- lidar, legacy -->
+	<arg name="localization_type" default="lidar" /> <!-- lidar, legacy -->
+	<arg name="field" default="it-fondazione-fornasini-field" /> 	<!-- gr-domokos-field, it-fondazione-fornasini-field -->
 
 	<arg name="record" default="false" />
-	<arg name="rosbag_name" default="fami_tf0_glb1_rtk1_ldr0_whl1_swcRTK" />
+	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
 
    <group ns="$(arg test_name)">
 
@@ -52,8 +53,8 @@
 
 		<!-- Multiple maps node -->
 		<include file="$(find aristos_maps)/launch/multiple_maps.launch" >
-			<arg name="map_file" default="$(env HOME)/.ikh/fields/gr-domokos-field/maps/multimap_environment.yaml"/>
-			<arg name="maps_path" default="$(env HOME)/.ikh/fields/gr-domokos-field/maps"/>
+			<arg name="map_file" default="$(env HOME)/.ikh/fields/$(arg field)/maps/multimap_environment.yaml"/>
+			<arg name="maps_path" default="$(env HOME)/.ikh/fields/$(arg field)/maps"/>
 		</include>
 
 		<!--- Robot State TF -->

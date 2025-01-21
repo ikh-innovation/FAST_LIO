@@ -7,6 +7,7 @@
 	<arg name="global_ekf" default="true" />
 	<arg name="localization_type" default="lidar" /> <!-- lidar, legacy -->
 	<arg name="field" default="it-fondazione-fornasini-field" /> 	<!-- gr-domokos-field, it-fondazione-fornasini-field -->
+	<arg name="localization_relay" default="true" /> 
 
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
@@ -36,7 +37,12 @@
 		<param name="runtime_pos_log_enable" type="bool" value="0" />
 
 		<!-- Run FAST-LIO -->
-		<node pkg="fast_lio" type="fastlio_mapping" name="laserMapping" output="screen" /> 
+		<group if="$(arg localization_relay)">
+			<node pkg="fast_lio" type="fastlio_mapping_halt" name="laserMapping" output="screen" /> 
+		</group>
+		<group unless="$(arg localization_relay)">
+			<node pkg="fast_lio" type="fastlio_mapping" name="laserMapping" output="screen" /> 
+		</group>
 
 		<!--- Run RViz -->
 		<group if="$(arg rviz)">
@@ -50,6 +56,18 @@
 			<arg name="fast_lio_publish_tf" default="$(arg fast_lio_publish_tf)"/>
 			<arg name="global_ekf" default="$(arg global_ekf)"/>
 		</include>
+
+		<!-- Localization relay node -->
+		<group if="$(arg localization_relay)">
+			<node pkg="fast_lio" type="localization_relay.py" name="localization_relay_node" output="screen"> 
+				<remap from="imu" to="imu_raw" />
+				<remap from="wheel_odom" to="wheel/odom" />
+				<remap from="lidar_odom" to="Odometry" />
+				<remap from="relay/imu" to="imu_raw_switch" />
+				<remap from="relay/wheel_odom" to="wheel/odom_switch" />
+				<remap from="relay/lidar_odom" to="Odometry_switch" />
+			</node> 
+		</group>
 
 		<!-- Multiple maps node -->
 		<include file="$(find aristos_maps)/launch/multiple_maps.launch" >

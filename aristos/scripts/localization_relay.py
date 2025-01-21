@@ -20,12 +20,12 @@ class LocalizationRelay:
         # Initialize subscribers
         self.imu_sub = rospy.Subscriber("imu", Imu, self.imu_callback)
         self.wheel_odom_sub = rospy.Subscriber("wheel_odom", Odometry, self.wheel_odom_callback)
-        self.lidar_odom_sub = rospy.Subscriber("lidar_odom", Odometry, self.lidar_odom_callback)
+        # self.lidar_odom_sub = rospy.Subscriber("lidar_odom", Odometry, self.lidar_odom_callback)
 
         # Initialize publishers
         self.imu_pub = rospy.Publisher("relay/imu", Imu, queue_size=10)
         self.wheel_odom_pub = rospy.Publisher("relay/wheel_odom", Odometry, queue_size=10)
-        self.lidar_odom_pub = rospy.Publisher("relay/lidar_odom", Odometry, queue_size=10)
+        # self.lidar_odom_pub = rospy.Publisher("relay/lidar_odom", Odometry, queue_size=10)
 
         # Default to lidar source
         self.use_lidar = True

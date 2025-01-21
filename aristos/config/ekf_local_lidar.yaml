@@ -7,21 +7,21 @@ ekf_local:
   world_frame: $(arg test_name)/odom
 
   frequency: 50
-  two_d_mode: false
+  two_d_mode: $(arg two_d_mode)
   sensor_timeout: 0.01
   # -------------------------------------
   # External IMU:
   # -------------------------------------
-  # imu0: imu_raw
-  # # make sure the input is aligned with ROS REP105. "imu_correct" is manually transformed by myself. EKF can also transform the data using tf between your imu and base_link
-  # imu0_config: [false, false, false,
-  #               false,  false,  true,
-  #               false, false, false,
-  #               false, false, false,
-  #               false,  false,  false]
-  # imu0_differential: false
-  # imu0_queue_size: 50 
-  # imu0_remove_gravitational_acceleration: true
+  imu0: imu_raw_relay
+  # make sure the input is aligned with ROS REP105. "imu_correct" is manually transformed by myself. EKF can also transform the data using tf between your imu and base_link
+  imu0_config: [false, false, false,
+                false,  false,  false,
+                false, false, false,
+                false, false, true,
+                false,  false,  false]
+  imu0_differential: false
+  imu0_queue_size: 50 
+  imu0_remove_gravitational_acceleration: true
 
   # -------------------------------------
   # Odometry (From FAST-LIO):
@@ -38,14 +38,14 @@ ekf_local:
   # -------------------------------------
   # Wheel Odometry 
   # -------------------------------------
-  # odom1: wheel/odom
-  # odom1_config: [true,  true,  true,
-  #                false, false,  true,
-  #                false, false, false,
-  #                false, false, false,
-  #                false, false, false]
-  # odom1_differential: true
-  # odom1_queue_size: 10
+  odom1: wheel/odom_relay
+  odom1_config: [false,  false,  false,
+                 false, false,  false,
+                 true, true, true,
+                 false, false, false,
+                 false, false, false]
+  odom1_differential: false
+  odom1_queue_size: 10
 
   #                            x     y     z     r     p     y   x_dot  y_dot  z_dot  r_dot p_dot y_dot x_ddot y_ddot z_ddot
   process_noise_covariance: [  1.0,  0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,    0,    0,      0,

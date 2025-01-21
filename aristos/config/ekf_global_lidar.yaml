@@ -27,7 +27,7 @@ ekf_gps:
   world_frame: map #$(arg test_name)/odom
 
   frequency: 50
-  two_d_mode: false
+  two_d_mode: $(arg two_d_mode)
   sensor_timeout: 0.01
   # -------------------------------------
   # External IMU:
@@ -45,7 +45,7 @@ ekf_gps:
   # -------------------------------------
   # Odometry (From Navsat):
   # -------------------------------------
-  odom0: odometry/onlyRTK_switch
+  odom0: odometry/onlyRTK
   # odom0: odometry/gps #use with navsat node
   odom0_config: [true,  true,  false,
                  false, false, false,
@@ -70,14 +70,14 @@ ekf_gps:
   # -------------------------------------
   # Wheel Odometry 
   # -------------------------------------
-  # odom2: wheel/odom
-  # odom2_config: [true,  true,  false,
-  #                false, false,  true,
-  #                false, false, false,
-  #                false, false, false,
-  #                false, false, false]
-  # odom2_differential: true
-  # odom2_queue_size: 10
+  odom2: wheel/odom_relay
+  odom2_config: [false,  false,  false,
+                 false, false,  false,
+                 true, true, true,
+                 false, false, false,
+                 false, false, false]
+  odom2_differential: false
+  odom2_queue_size: 10
 
   #                            x     y     z     r     p     y   x_dot  y_dot  z_dot  r_dot p_dot y_dot x_ddot y_ddot z_ddot
   process_noise_covariance: [  1.0,  0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,    0,    0,      0,

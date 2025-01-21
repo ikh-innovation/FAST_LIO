@@ -5,9 +5,10 @@
 	<arg name="test_name" default="aristos" />
 	<arg name="fast_lio_publish_tf" default="false" />
 	<arg name="global_ekf" default="true" />
+	<arg name="two_d_mode" default="true" /> 
 	<arg name="localization_type" default="lidar" /> <!-- lidar, legacy -->
 	<arg name="field" default="it-fondazione-fornasini-field" /> 	<!-- gr-domokos-field, it-fondazione-fornasini-field -->
-	<arg name="localization_relay" default="true" /> 
+	<arg name="localization_relay" default="false" /> 
 
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
@@ -17,10 +18,12 @@
 		<!-- Parameters -->
 		<rosparam file="$(find fast_lio)/aristos/config/ekf_global_$(arg localization_type).yaml" command="load" subst_value="True">
 			<param name="test_name" value="$(arg test_name)" />
+			<param name="two_d_mode" value="$(arg two_d_mode)" />
 		</rosparam>
 
 		<rosparam file="$(find fast_lio)/aristos/config/ekf_local_$(arg localization_type).yaml" command="load" subst_value="True">
 			<param name="test_name" value="$(arg test_name)" />
+			<param name="two_d_mode" value="$(arg two_d_mode)" />
 		</rosparam>
 
 		<rosparam file="$(find fast_lio)/aristos/config/mid360.yaml"  command="load" subst_value="True">
@@ -63,9 +66,9 @@
 				<remap from="imu" to="imu_raw" />
 				<remap from="wheel_odom" to="wheel/odom" />
 				<remap from="lidar_odom" to="Odometry" />
-				<remap from="relay/imu" to="imu_raw_switch" />
-				<remap from="relay/wheel_odom" to="wheel/odom_switch" />
-				<remap from="relay/lidar_odom" to="Odometry_switch" />
+				<remap from="relay/imu" to="imu_raw_relay" />
+				<remap from="relay/wheel_odom" to="wheel/odom_relay" />
+				<!-- <remap from="relay/lidar_odom" to="Odometry_relay" /> -->
 			</node> 
 		</group>
 

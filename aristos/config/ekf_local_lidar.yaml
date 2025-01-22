@@ -2,9 +2,9 @@
 ekf_local:
   publish_tf: true
   map_frame: map
-  odom_frame: $(arg test_name)/odom
-  base_link_frame: $(arg test_name)/base_link
-  world_frame: $(arg test_name)/odom
+  odom_frame: aristos_odom
+  base_link_frame: aristos_base_footprint
+  world_frame: aristos_odom
 
   frequency: 50
   two_d_mode: $(arg two_d_mode)
@@ -12,7 +12,7 @@ ekf_local:
   # -------------------------------------
   # External IMU:
   # -------------------------------------
-  imu0: imu_raw_relay
+  imu0: imu/data_relay
   # make sure the input is aligned with ROS REP105. "imu_correct" is manually transformed by myself. EKF can also transform the data using tf between your imu and base_link
   imu0_config: [false, false, false,
                 false,  false,  false,

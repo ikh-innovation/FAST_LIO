@@ -9,7 +9,14 @@
 	<arg name="localization_type" default="lidar" /> <!-- lidar, legacy -->
 	<arg name="pmx_type" default="no_pmx" /> <!-- pmx, no_pmx -->
 	<arg name="localization_relay" default="false" /> <!-- allows to relay topics, but relies on the untested fastlio_mapping_halt implementation -->
+	<arg name="global_ekf_output_topic" default="aristos/ekf/global/pose_estimation"/> 
 	<arg name="field" default="it-fondazione-fornasini-field" /> 	<!-- gr-domokos-field, it-fondazione-fornasini-field -->
+
+	<!-- The following params should be set together in order to relay onlyRTK topic.
+	Either (false, "") or (true, "_relay") 
+	Keep in mind that only in no_pmx type will take effect-->
+	<arg name="rtk_relay" default="false" /> 
+	<arg name="rtk_relay_extension" default="" />
 
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
@@ -20,6 +27,7 @@
 		<rosparam file="$(find fast_lio)/aristos/config/ekf_global_$(arg localization_type)_$(arg pmx_type).yaml" command="load" subst_value="True">
 			<param name="test_name" value="$(arg test_name)" />
 			<param name="two_d_mode" value="$(arg two_d_mode)" />
+			<param name="rtk_relay_extension" value="$(arg rtk_relay_extension)" />
 		</rosparam>
 
 		<rosparam file="$(find fast_lio)/aristos/config/ekf_local_$(arg localization_type).yaml" command="load" subst_value="True">
@@ -55,21 +63,30 @@
 
 		<!--- Run Navsat -->
 		<include file="$(find fast_lio)/aristos/launch/module_navsat.launch" >
-			<arg name="imu_topic" default="imu_raw"/>
-			<arg name="gps_topic" default="gps/fix"/>
+			<arg name="imu_topic" default="imu/data"/>
+			<!-- <arg name="gps_topic" default="gps/fix"/> -->
 			<arg name="fast_lio_publish_tf" default="$(arg fast_lio_publish_tf)"/>
 			<arg name="global_ekf" default="$(arg global_ekf)"/>
+			<arg name="global_ekf_output_topic" default="$(arg global_ekf_output_topic)"/> 
 		</include>
 
 		<!-- Localization relay node -->
 		<group if="$(arg localization_relay)">
 			<node pkg="fast_lio" type="localization_relay.py" name="localization_relay_node" output="screen"> 
-				<remap from="imu" to="imu_raw" />
+				<remap from="imu" to="imu/data" />
 				<remap from="wheel_odom" to="wheel/odom" />
 				<remap from="lidar_odom" to="Odometry" />
-				<remap from="relay/imu" to="imu_raw_relay" />
+				<remap from="relay/imu" to="imu/data_relay" />
 				<remap from="relay/wheel_odom" to="wheel/odom_relay" />
 				<!-- <remap from="relay/lidar_odom" to="Odometry_relay" /> -->
+			</node> 
+		</group>
+
+		<!-- RTK relay node -->
+		<group if="$(arg rtk_relay)">
+			<node pkg="fast_lio" type="rtk_relay.py" name="rtk_relay_node" output="screen"> 
+				<!-- <remap from="odometry/gps/onlyRTK" to="odometry/gps/onlyRTK" /> -->
+				<remap from="relay/odometry/gps/onlyRTK" to="odometry/gps/onlyRTK_relay" />
 			</node> 
 		</group>
 

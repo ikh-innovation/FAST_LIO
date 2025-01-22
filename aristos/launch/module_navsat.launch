@@ -5,6 +5,7 @@
     <arg name="gps_topic" default="gps/fix"/>
     <arg name="fast_lio_publish_tf" default="false" />
     <arg name="global_ekf" default="true" />
+    <arg name="global_ekf_output_topic" default="odometry/navsat" />
 
     <!-- <env name="ROSCONSOLE_CONFIG_FILE" value="$(find lio_sam)/launch/include/rosconsole/rosconsole_error.conf"/> -->
     
@@ -18,7 +19,7 @@
     <!-- EKF GPS-->
     <group if="$(arg global_ekf)">
         <node pkg="robot_localization" type="ekf_localization_node" output="screen" name="ekf_gps" respawn="true">
-            <remap from="odometry/filtered" to="odometry/navsat" />
+            <remap from="odometry/filtered" to="$(arg global_ekf_output_topic)" />
         </node>
     </group>
 

@@ -16,14 +16,14 @@ navsat:
   - 22.3332770044
   - 0.0186451
   - map
-  - aristos/base_link
+  - aristos_base_footprint
 
 # EKF for Navsat
 ekf_gps:
   publish_tf: true
   map_frame: map
-  odom_frame: $(arg test_name)/odom
-  base_link_frame: $(arg test_name)/base_link
+  odom_frame: aristos_odom
+  base_link_frame: aristos_base_footprint
   world_frame: map #$(arg test_name)/odom
 
   frequency: 50

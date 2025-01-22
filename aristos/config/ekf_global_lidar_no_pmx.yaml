@@ -16,14 +16,14 @@ navsat:
   - 22.3332770044
   - 0.0186451
   - map
-  - aristos/base_link
+  - aristos_base_footprint
 
 # EKF for Navsat
 ekf_gps:
   publish_tf: true
   map_frame: map
-  odom_frame: $(arg test_name)/odom
-  base_link_frame: $(arg test_name)/base_link
+  odom_frame: aristos_odom
+  base_link_frame: aristos_base_footprint
   world_frame: map #$(arg test_name)/odom
 
   frequency: 50
@@ -32,7 +32,7 @@ ekf_gps:
   # -------------------------------------
   # External IMU:
   # -------------------------------------
-  imu0: imu_raw
+  imu0: imu/data
   # make sure the input is aligned with ROS REP105. "imu_correct" is manually transformed by myself. EKF can also transform the data using tf between your imu and base_link
   imu0_config: [false, false, false,
                 true, true, true,
@@ -45,7 +45,7 @@ ekf_gps:
   # -------------------------------------
   # Odometry (From Navsat):
   # -------------------------------------
-  odom0: odometry/onlyRTK
+  odom0: odometry/gps/onlyRTK$(arg rtk_relay_extension)
   # odom0: odometry/gps #use with navsat node
   odom0_config: [true,  true,  false,
                  false, false, false,

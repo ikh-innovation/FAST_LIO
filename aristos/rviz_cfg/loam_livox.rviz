@@ -16,7 +16,9 @@ Panels:
         - /MarkerArray1/Namespaces1
         - /Map1
         - /Odometry2/Shape1
+        - /Odometry3
         - /Odometry3/Shape1
+        - /Odometry4
         - /Odometry4/Shape1
       Splitter Ratio: 0.6432291865348816
     Tree Height: 786
@@ -38,7 +40,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: surround
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -322,6 +324,24 @@ Visualization Manager:
           Value: true
         aristos/velodyne:
           Value: true
+        aristos_base_footprint:
+          Value: true
+        aristos_base_link:
+          Value: true
+        aristos_gnss_antenna_link:
+          Value: true
+        aristos_imu_link:
+          Value: true
+        aristos_imu_mount_link:
+          Value: true
+        aristos_livox_mount_base:
+          Value: true
+        aristos_odom:
+          Value: true
+        livox_frame:
+          Value: true
+        map:
+          Value: true
       Marker Scale: 10
       Name: TF
       Show Arrows: false
@@ -338,6 +358,18 @@ Visualization Manager:
               {}
             aristos/velodyne:
               {}
+        map:
+          aristos_odom:
+            aristos_base_footprint:
+              aristos_base_link:
+                aristos_gnss_antenna_link:
+                  {}
+                aristos_imu_mount_link:
+                  aristos_imu_link:
+                    {}
+                aristos_livox_mount_base:
+                  livox_frame:
+                    {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -405,7 +437,7 @@ Visualization Manager:
         Shaft Length: 0
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /aristos/odometry/onlyRTK
+      Topic: /aristos/odometry/gps/onlyRTK
       Unreliable: false
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -439,7 +471,7 @@ Visualization Manager:
         Shaft Length: 0
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /aristos/ground_truth
+      Topic: /aristos/ekf/global/pose_estimation
       Unreliable: false
       Value: true
   Enabled: true
@@ -470,25 +502,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 15.815865516662598
+      Distance: 5.452332019805908
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -88.72223663330078
-        Y: 24.72853660583496
-        Z: 1.0380628108978271
+        X: 13.544617652893066
+        Y: 10.240715980529785
+        Z: 6.663290023803711
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 1.1447967290878296
       Target Frame: global
       Value: Orbit (rviz)
-      Yaw: 4.633151531219482
+      Yaw: 4.243154048919678
     Saved: ~
 Window Geometry:
   Displays:

@@ -1,22 +1,22 @@
 
 # Navsat (convert GPS coordinates to Cartesian)
-navsat:
-  frequency: 50
-  wait_for_datum: true
-  delay: 0.0
-  magnetic_declination_radians: 0
-  yaw_offset: 0
-  zero_altitude: true
-  broadcast_utm_transform: false
-  broadcast_utm_transform_as_parent_frame: false
-  publish_filtered_gps: false
-  ## DOMOKOS DATUM
-  datum:
-  - 39.083527376
-  - 22.3332770044
-  - 0.0186451
-  - map
-  - aristos_base_footprint
+# navsat:
+#   frequency: 50
+#   wait_for_datum: true
+#   delay: 0.0
+#   magnetic_declination_radians: 0
+#   yaw_offset: 0
+#   zero_altitude: true
+#   broadcast_utm_transform: false
+#   broadcast_utm_transform_as_parent_frame: false
+#   publish_filtered_gps: false
+#   # ## DOMOKOS DATUM
+#   # datum:
+#   # - 39.083527376
+#   # - 22.3332770044
+#   # - 0.0186451
+#   # - map
+#   # - aristos_base_footprint
 
 # EKF for Navsat
 ekf_gps:

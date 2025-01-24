@@ -1,7 +1,7 @@
 <launch>
 <!-- Launch file for Livox MID360 LiDAR -->
 
-	<arg name="rviz" default="true" />
+	<arg name="rviz" default="false" />
 	<arg name="test_name" default="aristos" />
 	<arg name="fast_lio_publish_tf" default="false" />
 	<arg name="global_ekf" default="true" />
@@ -9,7 +9,7 @@
 	<arg name="localization_type" default="lidar" /> <!-- lidar, legacy -->
 	<arg name="pmx_type" default="no_pmx" /> <!-- pmx, no_pmx -->
 	<arg name="localization_relay" default="false" /> <!-- allows to relay topics, but relies on the untested fastlio_mapping_halt implementation -->
-	<arg name="global_ekf_output_topic" default="aristos/ekf/global/pose_estimation"/> 
+	<arg name="global_ekf_output_topic" default="ekf/global/pose_estimation"/> 
 	<arg name="field" default="it-fondazione-fornasini-field" /> 	<!-- gr-domokos-field, it-fondazione-fornasini-field -->
 
 	<!-- The following params should be set together in order to relay onlyRTK topic.
@@ -21,7 +21,7 @@
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
 
-   <group ns="$(arg test_name)">
+   <!-- <group ns="$(arg test_name)"> -->
 
 		<!-- Parameters -->
 		<rosparam file="$(find fast_lio)/aristos/config/ekf_global_$(arg localization_type)_$(arg pmx_type).yaml" command="load" subst_value="True">
@@ -39,14 +39,14 @@
 			<param name="fast_lio_publish_tf" value="$(arg fast_lio_publish_tf)" />
 		</rosparam>
 
-		<param name="feature_extract_enable" type="bool" value="0"/>
+		<param name="feature_extract_enable" type="bool" value="false"/>
 		<param name="point_filter_num" type="int" value="3"/>
 		<param name="max_iteration" type="int" value="3" />
 		<param name="filter_size_corner" type="double" value="0.5" /> <!-- default --> 
 		<param name="filter_size_surf" type="double" value="0.5" />
 		<param name="filter_size_map" type="double" value="0.5" />
 		<param name="cube_side_length" type="double" value="1000" />
-		<param name="runtime_pos_log_enable" type="bool" value="0" />
+		<param name="runtime_pos_log_enable" type="bool" value="false" />
 
 		<!-- Run FAST-LIO -->
 		<group if="$(arg localization_relay)">
@@ -91,15 +91,15 @@
 		</group>
 
 		<!-- Multiple maps node -->
-		<include file="$(find aristos_maps)/launch/multiple_maps.launch" >
+		<!-- <include file="$(find aristos_maps)/launch/multiple_maps.launch" >
 			<arg name="map_file" default="$(env HOME)/.ikh/fields/$(arg field)/maps/multimap_environment.yaml"/>
 			<arg name="maps_path" default="$(env HOME)/.ikh/fields/$(arg field)/maps"/>
-		</include>
+		</include> -->
 
 		<!--- Robot State TF -->
-		<include file="$(find fast_lio)/aristos/launch/module_robot_state_publisher.launch" >
+		<!-- <include file="$(find fast_lio)/aristos/launch/module_robot_state_publisher.launch" >
 			<arg name="test_name" default="$(arg test_name)"/>
-		</include>
+		</include> -->
 
 		<!--- Rosbag record -->
  		<node pkg="rosbag" type="record" name="rosbag_record"
@@ -107,7 +107,7 @@
        if="$(arg record)" />
 
 		<!-- <node pkg="tf" type="static_transform_publisher" name="static_publisher" args="-75.9292962362 52.8949042433 0 0 0 -0.264  0.967  /map /camera_init  100"/> -->
-    </group>
+    <!-- </group> -->
 
 </launch>
 

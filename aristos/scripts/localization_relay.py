@@ -9,6 +9,14 @@ class LocalizationRelay:
     def __init__(self):
         # Initialize node
         rospy.init_node('localization_relay_node')
+        
+        # Default to lidar source
+        self.use_lidar = True
+        
+        # Storage for latest messages
+        self.latest_imu_msg = None
+        self.latest_wheel_odom_msg = None
+        self.latest_lidar_odom_msg = None
 
         # Initialize service client
         rospy.wait_for_service('halt_lio', timeout=20)
@@ -26,14 +34,6 @@ class LocalizationRelay:
         self.imu_pub = rospy.Publisher("relay/imu", Imu, queue_size=10)
         self.wheel_odom_pub = rospy.Publisher("relay/wheel_odom", Odometry, queue_size=10)
         # self.lidar_odom_pub = rospy.Publisher("relay/lidar_odom", Odometry, queue_size=10)
-
-        # Default to lidar source
-        self.use_lidar = True
-
-        # Storage for latest messages
-        self.latest_imu_msg = None
-        self.latest_wheel_odom_msg = None
-        self.latest_lidar_odom_msg = None
 
     def imu_callback(self, msg):
         self.latest_imu_msg = msg

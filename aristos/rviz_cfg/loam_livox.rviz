@@ -326,6 +326,8 @@ Visualization Manager:
         aristos/velodyne:
           Value: false
         aristos_lvx/base_link:
+          Value: false
+        aristos_lvx/base_linkTF:
           Value: true
         aristos_lvx/chassis_link:
           Value: false
@@ -339,36 +341,47 @@ Visualization Manager:
           Value: true
         aristos_lvx/velodyne:
           Value: false
+        aristos_lvx/velodyne_lio:
+          Value: false
         map:
           Value: true
+        static:
+          Value: false
+        static_lvx:
+          Value: false
       Marker Scale: 10
       Name: TF
       Show Arrows: false
       Show Axes: true
       Show Names: false
       Tree:
+        aristos_lvx/base_link:
+          aristos_lvx/chassis_link:
+            aristos_lvx/imu_enu_link:
+              {}
+            aristos_lvx/imu_link:
+              {}
+            aristos_lvx/navsat_link:
+              {}
+            aristos_lvx/velodyne:
+              {}
         map:
-          aristos/odom:
-            aristos/base_link:
-              aristos/chassis_link:
-                aristos/imu_enu_link:
-                  {}
-                aristos/imu_link:
-                  {}
-                aristos/navsat_link:
-                  {}
-                aristos/velodyne:
-                  {}
-          aristos_lvx/odom:
-            aristos_lvx/base_link:
-              aristos_lvx/chassis_link:
-                aristos_lvx/imu_enu_link:
-                  {}
-                aristos_lvx/imu_link:
-                  {}
-                aristos_lvx/navsat_link:
-                  {}
-                aristos_lvx/velodyne:
+          static:
+            aristos/odom:
+              aristos/base_link:
+                aristos/chassis_link:
+                  aristos/imu_enu_link:
+                    {}
+                  aristos/imu_link:
+                    {}
+                  aristos/navsat_link:
+                    {}
+                  aristos/velodyne:
+                    {}
+          static_lvx:
+            aristos_lvx/odom:
+              aristos_lvx/velodyne_lio:
+                aristos_lvx/base_linkTF:
                   {}
       Update Interval: 0
       Value: true
@@ -536,7 +549,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.816912651062012
+      Distance: 7.5611419677734375
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -551,10 +564,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.1816657781600952
+      Pitch: 1.1216659545898438
       Target Frame: aristos/base_link
       Value: Orbit (rviz)
-      Yaw: 0.5235065221786499
+      Yaw: 6.176690578460693
     Saved: ~
 Window Geometry:
   Displays:

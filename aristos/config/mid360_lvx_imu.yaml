@@ -4,7 +4,7 @@ common:
     lid_topic:  "/aristos/livox/lidar" 
     imu_topic:  "/aristos/livox/imu" 
     init_frame: "aristos_lvx/odom"
-    body_frame: "aristos_lvx/velodyne"
+    body_frame: "aristos_lvx/velodyne_lio"
     # It seems that FAST-LIO returns the IMU frame, thus setting the body_frame as the imu_link is the correct.
     # This requires that FAST-LIO does not publish to /tf and a local ekf creates the transform odom->base_link, i.e.,  fast_lio_publish_tf: false
     # However, for practical reasons of aristos application base_link and imu_link does not make difference, 

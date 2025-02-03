@@ -3,6 +3,7 @@
 
 	<arg name="rviz" default="true" />
 	<arg name="test_name" default="aristos" />
+	<arg name="robot_state_publisher" default="true" />
 	<arg name="lidar_config" default="mid360.yaml"/>
 	<arg name="fast_lio_publish_tf" default="false" />
 	<arg name="global_ekf" default="true" />
@@ -102,18 +103,31 @@
 		</include>
 
 		<!--- Robot State TF -->
-		<include file="$(find fast_lio)/aristos/launch/module_robot_state_publisher.launch" >
-			<arg name="test_name" default="$(arg test_name)"/>
-		</include>
+		<group if="$(arg robot_state_publisher)">
+			<include file="$(find fast_lio)/aristos/launch/module_robot_state_publisher.launch" >
+				<arg name="test_name" default="$(arg test_name)"/>
+			</include>
+		</group>
 
 		<!--- Rosbag record -->
  		<node pkg="rosbag" type="record" name="rosbag_record"
        		args="record -o /home/aristos/catkin_ws/bags/comparison/$(arg rosbag_name) /$(arg test_name)/Odometry /$(arg test_name)/ground_truth /$(arg test_name)/odometry/navsat /$(arg test_name)/odometry/onlyRTK /$(arg test_name)/wheel/odom"
        if="$(arg record)" />
 
-		<node pkg="tf" type="static_transform_publisher" name="map_to_aristosLvxOdom" args="0.387, 0.000, 0.701 -0.027, 0.027, -0.707, 0.707  /map /aristos_lvx/odom  100"/>
-		<node pkg="tf" type="static_transform_publisher" name="map_to_aristosOdom" args="0.001, -0.008, 0.290 0 0 0 1  /map /aristos/odom  100"/>
-    </group>
+	   	<node pkg="fast_lio" type="base_link_broadcaster.py" name="base_link_broadcaster" output="screen"> 
+		</node> 
+
+		<node pkg="tf" type="static_transform_publisher" name="static_to_aristosLvxOdom" args="0.387, 0.000, 0.701 -0.027, 0.027, -0.707, 0.707  /static_lvx /aristos_lvx/odom  100"/>
+		<node pkg="tf" type="static_transform_publisher" name="static_to_aristosOdom" args="0.001, -0.008, 0.290 0 0 0 1  /static /aristos/odom  100"/>
+
+		<!-- map_building  75s -->
+		<!-- <node pkg="tf" type="static_transform_publisher" name="map_to_staticLvx" args="5.066, 25.624, 0.0 0.0, 0.0, -0.9981, 0.0606  /map /static_lvx 100"/> -->
+		<!-- <node pkg="tf" type="static_transform_publisher" name="map_to_static" args="5.066, 25.624, 0.0 0.0, 0.0, -0.9981, 0.0606   /map /static 100"/> -->
+
+		<!-- map_building  300s -->
+		<node pkg="tf" type="static_transform_publisher" name="map_to_staticLvx" args="-87.4166388969, 35.1400594624, 0.0 0.0, 0.0, 0.017908944363, 0.999839621995  /map /static_lvx 100"/>
+		<node pkg="tf" type="static_transform_publisher" name="map_to_static" args="-87.4166388969, 35.1400594624, 0.0 0.0, 0.0, 0.017908944363, 0.999839621995   /map /static 100"/>  
+
+	</group>
 
 </launch>
-

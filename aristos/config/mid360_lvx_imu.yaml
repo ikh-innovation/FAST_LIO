@@ -2,9 +2,9 @@ common:
     # lid_topic:  "/livox/points"
     # imu_topic:  "/livox/imu"
     lid_topic:  "/aristos/livox/lidar" 
-    imu_topic:  "/aristos/imu/data" 
-    init_frame: "aristos/odom"
-    body_frame: "aristos/imu_link"
+    imu_topic:  "/aristos/livox/imu" 
+    init_frame: "aristos_lvx/odom"
+    body_frame: "aristos_lvx/velodyne"
     # It seems that FAST-LIO returns the IMU frame, thus setting the body_frame as the imu_link is the correct.
     # This requires that FAST-LIO does not publish to /tf and a local ekf creates the transform odom->base_link, i.e.,  fast_lio_publish_tf: false
     # However, for practical reasons of aristos application base_link and imu_link does not make difference, 
@@ -28,31 +28,12 @@ mapping:
     det_range:     100.0
     extrinsic_est_en:  false      # true: enable the online estimation of IMU-LiDAR extrinsic
 
-    #DOMOKOS extrinsics
-    # extrinsic_T: [0.209, 0.008, 0.420]
-    # # extrinsic_R: [-1, 0, 0,
-    # #                 0, -1, 0,
-    # #                 0, 0, 1]     
-    # # -0.02563 rad pitch
-    # extrinsic_R: [  -1.000000,  0.0000000, -0.0256272,
-    #                 0.0000000, -1.0000000,  0.0000000,
-    #                 -0.0256272, 0.0000000,  1.000000 ]
 
-    #FERRARA
-    # extrinsic_T: [0.387, 0.008, 0.411]
-    # # 0.008 rad pitch teleop
-    # # -0.0380 rad pitch autonomous
-    # extrinsic_R: [  0.0000000,  1.0000000,  -0.008,
-    #                 -1.000000,  0.0000000,  0.0000000,
-    #                 0.0000000,  0.008,  1.0000000 ]
-
-    #DOMOKOS 2
-    extrinsic_T: [0.387, 0.008, 0.411]
-    # 0.008 rad pitch teleop
-    # -0.0380 rad pitch autonomous
-    extrinsic_R: [  0.0000000,  1.0000000,  0.077,
-                    -1.000000,  0.0000000,  0.0000000,
-                    0.0000000,  -0.077,  1.0000000 ]
+    #LIVOX MID360
+    extrinsic_T: [-0.011, -0.0234, 0.044]
+    extrinsic_R: [  0.9999161, 0.0026676,  0.0126707,
+                    -0.0025826, 0.9999741, -0.0067201,
+                    -0.0126883, 0.0066868,  0.9998971 ]
 
 
 publish:

@@ -2,9 +2,9 @@
 ekf_local:
   publish_tf: true
   map_frame: map
-  odom_frame: aristos/odom
-  base_link_frame: aristos/base_link
-  world_frame: aristos/odom
+  odom_frame: aristos_lvx/odom
+  base_link_frame: aristos_lvx/base_link
+  world_frame: aristos_lvx/odom
 
   frequency: 50
   two_d_mode: $(arg two_d_mode)

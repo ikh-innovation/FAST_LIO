@@ -125,8 +125,16 @@
 		<!-- <node pkg="tf" type="static_transform_publisher" name="map_to_static" args="5.066, 25.624, 0.0 0.0, 0.0, -0.9981, 0.0606   /map /static 100"/> -->
 
 		<!-- map_building  300s -->
-		<node pkg="tf" type="static_transform_publisher" name="map_to_staticLvx" args="-87.4166388969, 35.1400594624, 0.0 0.0, 0.0, 0.017908944363, 0.999839621995  /map /static_lvx 100"/>
-		<node pkg="tf" type="static_transform_publisher" name="map_to_static" args="-87.4166388969, 35.1400594624, 0.0 0.0, 0.0, 0.017908944363, 0.999839621995   /map /static 100"/>  
+		<!-- <node pkg="tf" type="static_transform_publisher" name="map_to_staticLvx" args="-87.4166388969, 35.1400594624, 0.0 0.0, 0.0, 0.017908944363, 0.999839621995  /map /static_lvx 100"/> -->
+		<!-- <node pkg="tf" type="static_transform_publisher" name="map_to_static" args="-87.4166388969, 35.1400594624, 0.0 0.0, 0.0, 0.017908944363, 0.999839621995   /map /static 100"/>   -->
+
+		<!-- trjL  160s -->
+		<node pkg="tf" type="static_transform_publisher" name="map_to_staticLvx" args="-3.82974876839, 52.7405506288, 0.0 0.0, 0.0, -0.999960393678, 0.00890006045838  /map /static_lvx 100"/>
+		<node pkg="tf" type="static_transform_publisher" name="map_to_static" args="-3.82974876839, 52.7405506288, 0.0 0.0, 0.0, -0.999960393678, 0.00890006045838   /map /static 100"/>  
+
+		<!-- trjL  190s -->
+		<!-- <node pkg="tf" type="static_transform_publisher" name="map_to_staticLvx" args="-10.6219784225, 52.3245393407, 0.0 0.0, 0.0, -0.784566350246, 0.620044871007  /map /static_lvx 100"/> -->
+		<!-- <node pkg="tf" type="static_transform_publisher" name="map_to_static" args="-10.6219784225, 52.3245393407, 0.0 0.0, 0.0, -0.784566350246, 0.620044871007    /map /static 100"/>   -->
 
 	</group>
 

@@ -18,6 +18,8 @@
 	<arg name="rtk_relay" default="true" /> 
 	<arg name="rtk_relay_extension" default="_relay" />
 
+	<arg name="modify_imu_covariances" default="true" /> 
+	
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
 
@@ -87,6 +89,13 @@
 			<node pkg="fast_lio" type="rtk_relay.py" name="rtk_relay_node" output="screen"> 
 				<!-- <remap from="odometry/gps/onlyRTK" to="odometry/gps/onlyRTK" /> -->
 				<remap from="relay/odometry/gps/onlyRTK" to="odometry/gps/onlyRTK_relay" />
+			</node> 
+		</group>
+
+		<!-- RTK relay node -->
+		<group if="$(arg modify_imu_covariances)">
+			<node pkg="fast_lio" type="imu_modify_covariances.py" name="imu_modify_covariances_node" output="screen"> 
+				<remap from="imu/data" to="imu/data/relative" />
 			</node> 
 		</group>
 

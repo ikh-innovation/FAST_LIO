@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Status1
         - /mapping1/surround1
         - /mapping1/currPoints1
         - /mapping1/currPoints1/Autocompute Value Bounds1
@@ -14,14 +15,13 @@ Panels:
         - /Odometry1/Odometry1/Covariance1/Position1
         - /Odometry1/Odometry1/Covariance1/Orientation1
         - /MarkerArray1/Namespaces1
-        - /Map1
+        - /TF1/Frames1
         - /Odometry2/Shape1
-        - /Odometry3
         - /Odometry3/Shape1
-        - /Odometry4
         - /Odometry4/Shape1
+        - /Odometry5/Shape1
       Splitter Ratio: 0.6432291865348816
-    Tree Height: 786
+    Tree Height: 810
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -40,7 +40,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: surround
+    SyncSource: currPoints
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -98,7 +98,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.05000000074505806
           Style: Points
-          Topic: /cloud_registered
+          Topic: /aristos/cloud_registered
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -126,7 +126,7 @@ Visualization Manager:
           Size (Pixels): 1
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /cloud_registered
+          Topic: /aristos/cloud_registered
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -301,7 +301,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: Map
-      Topic: /aristos/multimap_server/maps/field/center_obstacles/map
+      Topic: /map
       Unreliable: false
       Use Timestamp: false
       Value: true
@@ -311,35 +311,51 @@ Visualization Manager:
       Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
-        All Enabled: true
+        All Enabled: false
         aristos/base_link:
-          Value: true
+          Value: false
         aristos/chassis_link:
-          Value: true
+          Value: false
         aristos/imu_enu_link:
-          Value: true
+          Value: false
         aristos/imu_link:
-          Value: true
+          Value: false
         aristos/navsat_link:
-          Value: true
+          Value: false
         aristos/velodyne:
-          Value: true
+          Value: false
         aristos_base_footprint:
-          Value: true
+          Value: false
         aristos_base_link:
           Value: true
+        aristos_front_center_bumper_link:
+          Value: false
+        aristos_front_left_bumper_link:
+          Value: false
+        aristos_front_right_bumper_link:
+          Value: false
         aristos_gnss_antenna_link:
-          Value: true
+          Value: false
         aristos_imu_link:
-          Value: true
+          Value: false
         aristos_imu_mount_link:
-          Value: true
+          Value: false
         aristos_livox_mount_base:
-          Value: true
+          Value: false
         aristos_odom:
           Value: true
+        aristos_rear_center_bumper_link:
+          Value: false
+        aristos_rear_left_bumper_link:
+          Value: false
+        aristos_rear_right_bumper_link:
+          Value: false
+        aristos_usb_cam:
+          Value: false
+        aristos_usb_cam_base:
+          Value: false
         livox_frame:
-          Value: true
+          Value: false
         map:
           Value: true
       Marker Scale: 10
@@ -362,6 +378,12 @@ Visualization Manager:
           aristos_odom:
             aristos_base_footprint:
               aristos_base_link:
+                aristos_front_center_bumper_link:
+                  {}
+                aristos_front_left_bumper_link:
+                  {}
+                aristos_front_right_bumper_link:
+                  {}
                 aristos_gnss_antenna_link:
                   {}
                 aristos_imu_mount_link:
@@ -369,6 +391,15 @@ Visualization Manager:
                     {}
                 aristos_livox_mount_base:
                   livox_frame:
+                    {}
+                aristos_rear_center_bumper_link:
+                  {}
+                aristos_rear_left_bumper_link:
+                  {}
+                aristos_rear_right_bumper_link:
+                  {}
+                aristos_usb_cam_base:
+                  aristos_usb_cam:
                     {}
       Update Interval: 0
       Value: true
@@ -456,7 +487,7 @@ Visualization Manager:
           Color: 204; 51; 204
           Scale: 1
           Value: true
-        Value: true
+        Value: false
       Enabled: true
       Keep: 100
       Name: Odometry
@@ -472,6 +503,40 @@ Visualization Manager:
         Shaft Radius: 0.05000000074505806
         Value: Arrow
       Topic: /aristos/ekf/global/pose_estimation
+      Unreliable: false
+      Value: true
+    - Angle Tolerance: 0.10000000149011612
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: false
+      Enabled: true
+      Keep: 100
+      Name: Odometry
+      Position Tolerance: 0.30000001192092896
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.10000000149011612
+        Color: 255; 184; 17
+        Head Length: 0.10000000149011612
+        Head Radius: 0.10000000149011612
+        Shaft Length: 0
+        Shaft Radius: 0.05000000074505806
+        Value: Arrow
+      Topic: /aristos/ekf/global/pose_estimation_gnss
       Unreliable: false
       Value: true
   Enabled: true
@@ -501,34 +566,29 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 5.452332019805908
+      Angle: 1.5449998378753662
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 13.544617652893066
-        Y: 10.240715980529785
-        Z: 6.663290023803711
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.1447967290878296
-      Target Frame: global
-      Value: Orbit (rviz)
-      Yaw: 4.243154048919678
+      Scale: 15.722807884216309
+      Target Frame: aristos_base_link
+      Value: TopDownOrtho (rviz)
+      X: 8.410211563110352
+      Y: -6.4583282470703125
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1025
+  Height: 1043
   Hide Left Dock: false
-  Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd0000000400000000000001c80000034ffc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000034f000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d0061006700650000000297000001dc0000000000000000fb0000000a0049006d0061006700650000000394000001600000000000000000fb0000000a0049006d00610067006501000002c5000000c70000000000000000fb0000000a0049006d00610067006501000002c5000000c70000000000000000fb0000000a0049006d00610067006501000002c5000000c70000000000000000000000010000015200000365fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b00000365000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073d00000052fc0100000002fb0000000800540069006d006501000000000000073d000002eb00fffffffb0000000800540069006d006501000000000000045000000000000000000000056f0000034f00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd0000000400000000000001c800000365fc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b00000365000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d0061006700650000000297000001dc0000000000000000fb0000000a0049006d0061006700650000000394000001600000000000000000fb0000000a0049006d00610067006501000002c5000000c70000000000000000fb0000000a0049006d00610067006501000002c5000000c70000000000000000fb0000000a0049006d00610067006501000002c5000000c70000000000000000000000010000015200000365fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003b00000365000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000078000000052fc0100000002fb0000000800540069006d00650100000000000007800000024400fffffffb0000000800540069006d006501000000000000045000000000000000000000045a0000036500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -536,7 +596,7 @@ Window Geometry:
   Tool Properties:
     collapsed: false
   Views:
-    collapsed: true
-  Width: 1853
-  X: 67
-  Y: 27
+    collapsed: false
+  Width: 1920
+  X: 0
+  Y: 0

@@ -10,13 +10,13 @@
 	<arg name="pmx_type" default="no_pmx" /> <!-- pmx, no_pmx -->
 	<arg name="localization_relay" default="false" /> <!-- allows to relay topics, but relies on the untested fastlio_mapping_halt implementation -->
 	<arg name="global_ekf_output_topic" default="aristos/ekf/global/pose_estimation"/> 
-	<arg name="field" default="it-fondazione-fornasini-field" /> 	<!-- gr-domokos-field, it-fondazione-fornasini-field -->
+	<arg name="field" default="gr-domokos-field" /> 	<!-- gr-domokos-field, it-fondazione-fornasini-field -->
 
 	<!-- The following params should be set together in order to relay onlyRTK topic.
 	Either (false, "") or (true, "_relay") 
 	Keep in mind that only in no_pmx type will take effect-->
-	<arg name="rtk_relay" default="false" /> 
-	<arg name="rtk_relay_extension" default="" />
+	<arg name="rtk_relay" default="true" /> 
+	<arg name="rtk_relay_extension" default="_relay" />
 
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
@@ -111,3 +111,6 @@
 
 </launch>
 
+
+
+<!-- rosbag play -clock bags/trj_vertL_2025-01-29-14-28-35.bag /tf:=tf_mute /aristos/Odometry:=aristos/Odometry_mute /aristos/odometry/gps/onlyRTK_relay:=/aristos/odometry/gps/onlyRTK_relay_mute /aristos/imu/data_relay:=/aristos/imu/data_relay_mute -->

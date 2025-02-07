@@ -2,14 +2,14 @@
 <!-- Launch file for Livox MID360 LiDAR -->
 
 	<arg name="rviz" default="true" />
-	<arg name="test_name" default="aristos" />
+	<arg name="test_name" default="aristos_test" />
 	<arg name="fast_lio_publish_tf" default="false" />
 	<arg name="global_ekf" default="true" />
 	<arg name="two_d_mode" default="true" /> 
 	<arg name="localization_type" default="lidar" /> <!-- lidar, legacy -->
 	<arg name="pmx_type" default="no_pmx" /> <!-- pmx, no_pmx -->
 	<arg name="localization_relay" default="false" /> <!-- allows to relay topics, but relies on the untested fastlio_mapping_halt implementation -->
-	<arg name="global_ekf_output_topic" default="aristos/ekf/global/pose_estimation"/> 
+	<arg name="global_ekf_output_topic" default="ekf/global/pose_estimation"/> 
 	<arg name="field" default="gr-domokos-field" /> 	<!-- gr-domokos-field, it-fondazione-fornasini-field -->
 
 	<!-- The following params should be set together in order to relay onlyRTK topic.
@@ -18,7 +18,9 @@
 	<arg name="rtk_relay" default="true" /> 
 	<arg name="rtk_relay_extension" default="_relay" />
 
-	<arg name="modify_imu_covariances" default="true" /> 
+	<arg name="modify_imu_covariances" default="false" /> 
+	<arg name="republisher" default="true" /> 
+	<arg name="gnss_heading" default="false" /> 
 	
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
@@ -98,6 +100,27 @@
 				<remap from="imu/data" to="imu/data/relative" />
 			</node> 
 		</group>
+
+		<!-- Republisher node -->
+		<group if="$(arg republisher)">
+			<node pkg="fast_lio" type="republisher.py" name="republisher_node" output="screen"> 
+				<rosparam file="$(find fast_lio)/aristos/config/republisher.yaml"  command="load" subst_value="True">
+					<param name="test_name" value="$(arg test_name)" />
+				</rosparam>
+				<remap from="imu" to="/aristos/imu/data/relative" />
+				<remap from="rtk_odom" to="/aristos/odometry/gps/onlyRTK" />
+				<remap from="wheel_odom" to="/aristos/wheel/odom" />
+				<remap from="imu/repub" to="imu/data/relative" />
+				<remap from="rtk_odom/repub" to="odometry/gps/onlyRTK" />
+				<remap from="wheel_odom/repub" to="wheel/odom" />
+			</node> 
+		</group>
+
+		<!-- GNSS heading -->
+		<group if="$(arg gnss_heading)">
+			<include file="$(find gnss_odom)/launch/gnss_odom.launch" >
+			</include>	
+		</group>	
 
 		<!-- Multiple maps node -->
 		<include file="$(find aristos_maps)/launch/multiple_maps.launch" >

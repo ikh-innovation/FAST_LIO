@@ -1,0 +1,24 @@
+rtk_odom:
+  frame_id: "map"
+  child_frame_id: "$(arg test_name)/base_link"
+  # pose_covariance: [0.1, 0, 0, 0, 0, 0, 
+  #                   0, 0.1, 0, 0, 0, 0, 
+  #                   0, 0, 0.1, 0, 0, 0, 
+  #                   0, 0, 0, 0.1, 0, 0, 
+  #                   0, 0, 0, 0, 0.1, 0, 
+  #                   0, 0, 0, 0, 0, 0.1]
+  # twist_covariance: [0.2]*36
+
+wheel_odom:
+  frame_id: "$(arg test_name)/odom"
+  child_frame_id: "$(arg test_name)/base_link"
+  # pose_covariance: [0.05]*36
+  # twist_covariance: [0.1]*36
+
+imu:
+  frame_id: "$(arg test_name)/imu_link"
+  # orientation_covariance: [ 0.01, 0, 0,
+  #                           0, 0.01, 0,
+  #                           0, 0, 0.01]
+  # angular_velocity_covariance: [0.02]*9
+  # linear_acceleration_covariance: [0.03]*9

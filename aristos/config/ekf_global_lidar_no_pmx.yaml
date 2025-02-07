@@ -22,8 +22,8 @@ navsat:
 ekf_gps:
   publish_tf: true
   map_frame: map
-  odom_frame: aristos_odom
-  base_link_frame: aristos_base_footprint
+  odom_frame: $(arg test_name)/odom
+  base_link_frame: $(arg test_name)/base_link
   world_frame: map #$(arg test_name)/odom
 
   frequency: 50
@@ -32,7 +32,7 @@ ekf_gps:
   # -------------------------------------
   # External IMU:
   # -------------------------------------
-  imu0: imu/data/modified_covariances
+  imu0: imu/data/relative
   # make sure the input is aligned with ROS REP105. "imu_correct" is manually transformed by myself. EKF can also transform the data using tf between your imu and base_link
   imu0_config: [false, false, false,
                 true, true, true,

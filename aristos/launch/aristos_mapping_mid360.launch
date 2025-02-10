@@ -21,6 +21,7 @@
 	<arg name="modify_imu_covariances" default="false" /> 
 	<arg name="republisher" default="true" /> 
 	<arg name="gnss_heading" default="false" /> 
+	<arg name="heading_relay" default="false" /> 
 	
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
@@ -120,6 +121,17 @@
 		<group if="$(arg gnss_heading)">
 			<include file="$(find gnss_odom)/launch/gnss_odom.launch" >
 			</include>	
+		</group>	
+
+		<!-- Heading Relay -->
+		<group if="$(arg heading_relay)">
+			<node pkg="fast_lio" type="heading_relay.py" name="heading_relay_node" output="screen"> 
+				<remap from="imu" to="imu/data/relative" />
+				<remap from="odom" to="odometry/gps/onlyRTK" />
+				<param name="distance_threshold" value="2" />
+				<param name="velocity_threshold" value="0.4" />
+				<param name="window_size" value="20" />
+			</node>
 		</group>	
 
 		<!-- Multiple maps node -->

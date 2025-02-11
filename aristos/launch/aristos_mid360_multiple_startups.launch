@@ -1,5 +1,8 @@
 <launch>
 <!-- Launch file for Livox MID360 LiDAR -->
+    <node pkg="fast_lio" type="service_aggregator.py" name="use_rtk_service_aggregator_node" output="screen"> 
+    </node> 
+
     <include file="$(find fast_lio)/aristos/launch/aristos_mapping_mid360.launch" >
         <arg name="rviz" default="true" />
         <arg name="test_name" default="aristos_gnss" />

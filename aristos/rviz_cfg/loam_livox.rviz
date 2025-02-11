@@ -15,7 +15,7 @@ Panels:
         - /Odometry1/Odometry1/Covariance1/Position1
         - /Odometry1/Odometry1/Covariance1/Orientation1
         - /MarkerArray1/Namespaces1
-        - /TF1
+        - /TF1/Frames1
         - /Odometry2/Shape1
         - /Odometry3/Shape1
         - /Odometry4/Shape1
@@ -23,6 +23,8 @@ Panels:
         - /Odometry6/Shape1
         - /Odometry7/Shape1
         - /Odometry8/Shape1
+        - /Odometry10
+        - /Odometry10/Shape1
       Splitter Ratio: 0.6432291865348816
     Tree Height: 810
   - Class: rviz/Selection
@@ -340,7 +342,7 @@ Visualization Manager:
         aristos_xsens/navsat_link:
           Value: false
         aristos_xsens/odom:
-          Value: false
+          Value: true
         aristos_xsens/velodyne:
           Value: false
         aristos_xsens_custom/base_link:
@@ -364,7 +366,7 @@ Visualization Manager:
         aristos_xsens_relay/imu_enu_link:
           Value: false
         aristos_xsens_relay/imu_link:
-          Value: true
+          Value: false
         aristos_xsens_relay/navsat_link:
           Value: false
         aristos_xsens_relay/odom:
@@ -664,6 +666,74 @@ Visualization Manager:
       Topic: /aristos_xsens_custom/ekf/global/pose_estimation_xsens_custom
       Unreliable: false
       Value: true
+    - Angle Tolerance: 0.10000000149011612
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 100
+      Name: Odometry
+      Position Tolerance: 0.10000000149011612
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.10000000149011612
+        Color: 255; 25; 0
+        Head Length: 0.30000001192092896
+        Head Radius: 0.10000000149011612
+        Shaft Length: 1
+        Shaft Radius: 0.05000000074505806
+        Value: Arrow
+      Topic: ""
+      Unreliable: false
+      Value: true
+    - Angle Tolerance: 0.10000000149011612
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 100
+      Name: Odometry
+      Position Tolerance: 0.10000000149011612
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.10000000149011612
+        Color: 0; 0; 255
+        Head Length: 0.30000001192092896
+        Head Radius: 0.10000000149011612
+        Shaft Length: 1
+        Shaft Radius: 0.05000000074505806
+        Value: Arrow
+      Topic: /aristos_xsens_custom/odom_filtered
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
@@ -691,7 +761,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0.7850022315979004
+      Angle: 0.10500308871269226
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -701,11 +771,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 253.63638305664062
+      Scale: 82.12194061279297
       Target Frame: aristos_gnss/base_link
       Value: TopDownOrtho (rviz)
-      X: 0.6323524117469788
-      Y: -0.4541342854499817
+      X: -1.0052865743637085
+      Y: -0.6816850900650024
     Saved: ~
 Window Geometry:
   Displays:

@@ -2,6 +2,7 @@
 <!-- Launch file for Livox MID360 LiDAR -->
 
 	<arg name="rviz" default="true" />
+	<arg name="use_sim_time" default="true" />
 	<arg name="test_name" default="aristos_test" />
 	<arg name="fast_lio_publish_tf" default="false" />
 	<arg name="global_ekf" default="true" />
@@ -22,9 +23,13 @@
 	<arg name="republisher" default="true" /> 
 	<arg name="gnss_heading" default="false" /> 
 	<arg name="heading_relay" default="false" /> 
+	<arg name="yaw_rmse" default="false" /> 
 	
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
+
+
+	<param name="use_sim_time" value="$(arg use_sim_time)" />
 
    <group ns="$(arg test_name)">
 
@@ -131,6 +136,15 @@
 				<param name="distance_threshold" value="2" />
 				<param name="velocity_threshold" value="0.4" />
 				<param name="window_size" value="20" />
+			</node>
+		</group>	
+
+		<!-- Yaw Relay -->
+		<group if="$(arg yaw_rmse)">
+			<node pkg="fast_lio" type="yaw_rmse.py" name="yaw_rmse_node" output="screen"> 
+				<remap from="imu/data" to="imu/data/relative" />
+				<remap from="gnss_heading" to="gnss_heading/odom" />
+				<!-- <param name="window_size" value="20" /> -->
 			</node>
 		</group>	
 

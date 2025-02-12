@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <root>
- <tabbed_widget name="Main Window" parent="main_window">
+ <tabbed_widget parent="main_window" name="Main Window">
   <Tab tab_name="tab1" containers="1">
    <Container>
     <DockSplitter count="1" sizes="1" orientation="-">
      <DockArea name="...">
-      <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
-       <range right="191.224428" bottom="526.688081" left="108.224484" top="750.975909"/>
+      <plot flip_y="false" flip_x="false" mode="TimeSeries" style="Lines">
+       <range bottom="-4.359531" left="0.000000" right="13.957555" top="1.681676"/>
        <limitY/>
-       <curve name="yaw_error" color="#1f77b4"/>
+       <curve color="#1f77b4" name="yaw_error"/>
       </plot>
      </DockArea>
     </DockSplitter>
@@ -18,24 +18,50 @@
    <Container>
     <DockSplitter count="1" sizes="1" orientation="-">
      <DockArea name="...">
-      <plot style="Lines" flip_y="false" mode="TimeSeries" flip_x="false">
-       <range right="191.224428" bottom="-833.056640" left="0.000000" top="-37.274486"/>
+      <plot flip_y="false" flip_x="false" mode="TimeSeries" style="Lines">
+       <range bottom="-184.276311" left="0.000000" right="13.957555" top="-176.890898"/>
        <limitY/>
-       <curve name="/aristos_gnss/imu/data/relative/orientation/yaw_deg" color="#d62728"/>
-       <curve name="/aristos_gnss/gnss_heading/odom/pose/pose/orientation/yaw_deg" color="#1ac938"/>
+       <curve color="#d62728" name="/aristos_gnss/imu/data/relative/orientation/yaw_deg"/>
+       <curve color="#1ac938" name="/aristos_gnss/gnss_heading/odom/pose/pose/orientation/yaw_deg"/>
       </plot>
      </DockArea>
     </DockSplitter>
    </Container>
   </Tab>
-  <currentTabIndex index="1"/>
+  <Tab tab_name="tab2" containers="1">
+   <Container>
+    <DockSplitter count="1" sizes="1" orientation="-">
+     <DockArea name="...">
+      <plot flip_y="false" flip_x="false" mode="TimeSeries" style="Lines">
+       <range bottom="-0.100000" left="0.000000" right="0.000000" top="0.100000"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/aristos/robot_hardware_status_topic/imu.0/mag_norm"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab tab_name="tab2" containers="1">
+   <Container>
+    <DockSplitter count="1" sizes="1" orientation="-">
+     <DockArea name="...">
+      <plot flip_y="false" flip_x="false" mode="TimeSeries" style="Lines">
+       <range bottom="0.002374" left="0.338112" right="12.837792" top="0.041225"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/aristos_gnss/yaw_rmse/data"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <currentTabIndex index="3"/>
  </tabbed_widget>
  <use_relative_time_offset enabled="1"/>
  <!-- - - - - - - - - - - - - - - -->
  <!-- - - - - - - - - - - - - - - -->
  <Plugins>
   <plugin ID="DataLoad CSV">
-   <default delimiter="0" time_axis=""/>
+   <default time_axis="" delimiter="0"/>
   </plugin>
   <plugin ID="DataLoad MCAP"/>
   <plugin ID="DataLoad ROS bags">

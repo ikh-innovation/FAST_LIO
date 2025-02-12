@@ -22,6 +22,7 @@
         <arg name="rtk_relay_extension" default="_relay" />
 
         <arg name="gnss_heading" default="true" /> 
+        <arg name="yaw_rmse" default="true" /> 
 
         <arg name="record" default="false" />
         <arg name="rosbag_name" default="under_feat1_fss05_fsm05" />

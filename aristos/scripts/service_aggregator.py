@@ -36,7 +36,7 @@ class ServiceAggregator:
         
         for proxy in self.proxies:
             try:
-                res = proxy(SetBoolRequest())  
+                res = proxy(req)  
                 responses.append(res.message)
                 if not res.success:
                     success = False

@@ -9,9 +9,12 @@
 	<arg name="two_d_mode" default="true" /> 
 	<arg name="localization_type" default="lidar" /> <!-- lidar, legacy -->
 	<arg name="pmx_type" default="no_pmx" /> <!-- pmx, no_pmx -->
+	<arg name="lidar_config_file" default="mid360" />
 	<arg name="localization_relay" default="false" /> <!-- allows to relay topics, but relies on the untested fastlio_mapping_halt implementation -->
 	<arg name="global_ekf_output_topic" default="ekf/global/pose_estimation"/> 
 	<arg name="field" default="gr-domokos-field" /> 	<!-- gr-domokos-field, it-fondazione-fornasini-field -->
+
+	<arg name="local_filter_type" default="lidar" /> 
 
 	<!-- The following params should be set together in order to relay onlyRTK topic.
 	Either (false, "") or (true, "_relay") 
@@ -19,11 +22,13 @@
 	<arg name="rtk_relay" default="true" /> 
 	<arg name="rtk_relay_extension" default="_relay" />
 
-	<arg name="modify_imu_covariances" default="false" /> 
+	<arg name="modify_imu" default="false" /> 
+	<arg name="bootstrap_imu" default="false" /> 
 	<arg name="republisher" default="true" /> 
 	<arg name="gnss_heading" default="false" /> 
 	<arg name="heading_relay" default="false" /> 
 	<arg name="yaw_rmse" default="false" /> 
+	<arg name="imu_onlyRTK_relay" default="false" /> 
 	
 	<arg name="record" default="false" />
 	<arg name="rosbag_name" default="under_feat1_fss05_fsm05" />
@@ -40,12 +45,12 @@
 			<param name="rtk_relay_extension" value="$(arg rtk_relay_extension)" />
 		</rosparam>
 
-		<rosparam file="$(find fast_lio)/aristos/config/ekf_local_$(arg localization_type).yaml" command="load" subst_value="True">
+		<rosparam file="$(find fast_lio)/aristos/config/ekf_local_$(arg local_filter_type).yaml" command="load" subst_value="True">
 			<param name="test_name" value="$(arg test_name)" />
 			<param name="two_d_mode" value="$(arg two_d_mode)" />
 		</rosparam>
 
-		<rosparam file="$(find fast_lio)/aristos/config/mid360.yaml"  command="load" subst_value="True">
+		<rosparam file="$(find fast_lio)/aristos/config/$(arg lidar_config_file).yaml"  command="load" subst_value="True">
 			<param name="fast_lio_publish_tf" value="$(arg fast_lio_publish_tf)" />
 		</rosparam>
 
@@ -100,10 +105,21 @@
 			</node> 
 		</group>
 
-		<!-- RTK relay node -->
-		<group if="$(arg modify_imu_covariances)">
-			<node pkg="fast_lio" type="imu_modify_covariances.py" name="imu_modify_covariances_node" output="screen"> 
+		<!--Modify IMU node -->
+		<group if="$(arg modify_imu)">
+			<node pkg="fast_lio" type="imu_modifier.py" name="imu_modifier_node" output="screen"> 
 				<remap from="imu/data" to="imu/data/relative" />
+				<param name="yaw_offset" value="0.0" />
+				<param name="variance" value="0.0001" />
+			</node> 
+		</group>
+
+		<!--Bootstrap IMU node -->
+		<group if="$(arg bootstrap_imu)">
+			<node pkg="fast_lio" type="imu_bootstrap.py" name="imu_bootstrap_node" output="screen"> 
+				<remap from="imu/data" to="imu/data/relative" />
+				<remap from="active_ekf/odom" to="/aristos_xsens/ekf/global/pose_estimation" />
+				<remap from="bootstrap_ekf/odom" to="ekf/global/pose_estimation" />
 			</node> 
 		</group>
 
@@ -145,6 +161,16 @@
 				<remap from="imu/data" to="imu/data/relative" />
 				<remap from="gnss_heading" to="gnss_heading/odom" />
 				<!-- <param name="window_size" value="20" /> -->
+			</node>
+		</group>	
+
+		<!-- IMU onlyRTK Relay -->
+		<group if="$(arg imu_onlyRTK_relay)">
+			<node pkg="fast_lio" type="imu_onlyRTK_relay.py" name="imu_onlyRTK_relay_node" output="screen"> 
+				<remap from="imu/data" to="imu/data/relative" />
+				<remap from="onlyRTK" to="odometry/gps/onlyRTK" />
+				<remap from="imu_onlyRTK/relay" to="imu_onlyRTK/relay" />
+				<param name="timeout" value="1" />
 			</node>
 		</group>	
 

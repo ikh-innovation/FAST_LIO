@@ -18,10 +18,17 @@ class YawRMSECalculator:
         self.imu_topic = rospy.get_param('~imu_topic', 'imu/data')
         self.odom_topic = rospy.get_param('~odom_topic', 'gnss_heading')
         self.window_size = rospy.get_param('~window_size', 5.0)  # Rolling window in seconds
+        self.odometry_update_timeout = rospy.get_param('~odometry_update_timeout', 1.0)  # Timeout due to odom topic inactivity
+        self.timer_hz = rospy.get_param('~timer_hz', 10)
         
         # Buffers to store yaw values with timestamps
         self.imu_data = deque()
         self.odom_data = deque()
+
+        self.last_odom_time = None
+        self.latest_imu_msg = None
+        self.imu_relay_pub = rospy.Publisher('imu_rmse_relay', Imu, queue_size=10)
+        self.RMSE_ths = 0.01
 
         # Locks
         self.odom_lock = Lock()
@@ -34,10 +41,13 @@ class YawRMSECalculator:
         # Timer for RMSE computation
         self.rmse_msg = Float32()
         self.rmse_pub = rospy.Publisher('yaw_rmse', Float32, queue_size=10)
-        rospy.Timer(rospy.Duration(0.1), self.compute_rmse)
+        self.error_msg = Float32()
+        self.error_pub = rospy.Publisher('latest_imu_gnssHeading_error', Float32, queue_size=10)
+        rospy.Timer(rospy.Duration(1.0/self.timer_hz), self.compute_rmse)
 
     def imu_callback(self, msg):
         with self.imu_lock:
+            self.latest_imu_msg = msg
             yaw = self.get_yaw_from_quaternion(msg.orientation)
             self.imu_data.append((msg.header.stamp.to_sec(), yaw))
             # self.clean_old_imu_data()
@@ -77,21 +87,28 @@ class YawRMSECalculator:
     def compute_rmse(self, event):
         with self.imu_lock:
             with self.odom_lock:
+                self.relay_imu = False
+
                 self.clean_old_imu_data()
                 self.clean_old_odom_data()
                 # print("===================== IMU ====================")
                 # print(self.imu_data)
                 # print("===================== ODOM ====================")
                 # print(self.odom_data)
+        
                 if not self.imu_data or not self.odom_data:
                     return
+                
+                # return if odom topic is inactive 
+                current_time = rospy.get_time()
+                if self.last_odom_time:
+                    if current_time - self.last_odom_time > self.odometry_update_timeout:
+                        return
+
                 imu_times, imu_yaws = zip(*self.imu_data)
                 odom_times, odom_yaws = zip(*self.odom_data)
                 
                 matched_pairs = []
-                # for imu_t, imu_y in zip(imu_times, imu_yaws):
-                #     closest_idx = np.argmin(np.abs(np.array(odom_times) - imu_t))
-                #     matched_pairs.append((imu_y, odom_yaws[closest_idx]))
 
                 for odom_t, odom_y in zip(odom_times, odom_yaws):
                     closest_idx = np.argmin(np.abs(np.array(imu_times) - odom_t))
@@ -100,7 +117,19 @@ class YawRMSECalculator:
                 if matched_pairs:
                     errors = [self.get_signed_angle_error(odom_y, imu_y) for odom_y, imu_y in matched_pairs]
                     rmse = np.sqrt(np.mean(np.square(errors)))
-                    rospy.loginfo('Yaw RMSE: {}'.format(rmse))
+                    # rospy.loginfo('Yaw RMSE: {}'.format(rmse))
+
+                    self.error_msg.data = errors[-1]
+                    self.error_pub.publish(self.error_msg)
+
+                    # print("-----------RMSE THS CHECKING")
+                    if rmse<self.RMSE_ths:
+                        # self.relay_imu = True
+                        # print("-----------RMSE below threshold")
+                        if current_time-self.latest_imu_msg.header.stamp.to_sec()<1.0/self.timer_hz:
+                            # print("-----------IMU relayed")
+                            self.imu_relay_pub.publish(self.latest_imu_msg)
+                        
                     self.rmse_msg.data = rmse
                     self.rmse_pub.publish(self.rmse_msg)
     

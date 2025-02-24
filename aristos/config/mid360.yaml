@@ -47,7 +47,7 @@ mapping:
     #                 0.0000000,  0.008,  1.0000000 ]
 
     #DOMOKOS 2
-    extrinsic_T: [0.387, 0.008, 0.411]
+    extrinsic_T: [0.387, 0.008, 0.341]
     # 0.008 rad pitch teleop
     # -0.0380 rad pitch autonomous
     extrinsic_R: [  0.0000000,  1.0000000,  0.077,

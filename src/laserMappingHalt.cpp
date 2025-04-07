@@ -925,6 +925,7 @@ int main(int argc, char** argv)
     while(ros::ok()){
 
         std::cout<<"Initializing..."<<std::endl;
+        mtx_buffer.lock(); //lock during initialization
         initialize_globals();
 
         nh.param<bool>("publish/path_en",path_en, true);
@@ -988,6 +989,8 @@ int main(int argc, char** argv)
                 ("Odometry", 100000);
         ros::Publisher pubPath          = nh.advertise<nav_msgs::Path> 
                 ("path", 100000);
+
+        mtx_buffer.unlock();
     //------------------------------------------------------------------------------------------------------
         signal(SIGINT, SigHandle);
         ros::Rate rate(5000);
@@ -1152,6 +1155,8 @@ int main(int argc, char** argv)
         if (halt)
         {
             std::cout<<"LIO Halted. Sleeping..."<<std::endl;
+            sub_pcl.shutdown();
+            sub_imu.shutdown();
             while(ros::ok() && halt)
             {
                 

@@ -91,3 +91,7 @@ target_include_directories(fastlio_mapping PRIVATE ${PYTHON_INCLUDE_DIRS})
 add_executable(fastlio_mapping_halt src/laserMappingHalt.cpp include/ikd-Tree/ikd_Tree.cpp src/preprocess.cpp)
 target_link_libraries(fastlio_mapping_halt ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES})
 target_include_directories(fastlio_mapping_halt PRIVATE ${PYTHON_INCLUDE_DIRS})
+
+add_executable(fastlio_mapping_halt_cls include/ikd-Tree/ikd_Tree.cpp src/preprocess.cpp src/fast_lio_filter.cpp)
+target_link_libraries(fastlio_mapping_halt_cls ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${PYTHON_LIBRARIES})
+target_include_directories(fastlio_mapping_halt_cls PRIVATE ${PYTHON_INCLUDE_DIRS})

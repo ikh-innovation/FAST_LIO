@@ -35,22 +35,10 @@ FastLioFilter::FastLioFilter()
       Localmap_Initialized(false), timediff_lidar_wrt_imu(0.0), timediff_set_flg(false),
       lidar_mean_scantime(0.0), scan_num(0), process_increments(0),
       pcl_wait_pub(new PointCloudXYZI(500000, 1)),
-      pcl_wait_save(new PointCloudXYZI())
+      pcl_wait_save(new PointCloudXYZI()),
+      T1(MAXN), s_plot(MAXN), s_plot2(MAXN), s_plot3(MAXN), s_plot4(MAXN), s_plot5(MAXN),s_plot6(MAXN), s_plot7(MAXN), s_plot8(MAXN), s_plot9(MAXN), s_plot10(MAXN), s_plot11(MAXN)
 {
-    std::fill(T1, T1 + MAXN, 0.0);
-    std::fill(s_plot, s_plot + MAXN, 0.0);
-    std::fill(s_plot2, s_plot2 + MAXN, 0.0);
-    std::fill(s_plot3, s_plot3 + MAXN, 0.0);
-    std::fill(s_plot4, s_plot4 + MAXN, 0.0);
-    std::fill(s_plot5, s_plot5 + MAXN, 0.0);
-    std::fill(s_plot6, s_plot6 + MAXN, 0.0);
-    std::fill(s_plot7, s_plot7 + MAXN, 0.0);
-    std::fill(s_plot8, s_plot8 + MAXN, 0.0);
-    std::fill(s_plot9, s_plot9 + MAXN, 0.0);
-    std::fill(s_plot10, s_plot10 + MAXN, 0.0);
-    std::fill(s_plot11, s_plot11 + MAXN, 0.0);
-    std::fill(res_last, res_last + 100000, 0.0f);
-    std::fill(point_selected_surf, point_selected_surf + 100000, false);
+    ikdtree = std::make_shared<KD_TREE<PointType>>();
 }
 FastLioFilter::~FastLioFilter(){};
 
@@ -139,7 +127,7 @@ void FastLioFilter::RGBpointBodyLidarToIMU(PointType const * const pi, PointType
 void FastLioFilter::points_cache_collect()
 {
     PointVector points_history;
-    ikdtree.acquire_removed_points(points_history);
+    ikdtree->acquire_removed_points(points_history);
     // for (int i = 0; i < points_history.size(); i++) _featsArray->push_back(points_history[i]);
 }
 
@@ -187,7 +175,7 @@ void FastLioFilter::lasermap_fov_segment()
 
     points_cache_collect();
     double delete_begin = omp_get_wtime();
-    if(cub_needrm.size() > 0) kdtree_delete_counter = ikdtree.Delete_Point_Boxes(cub_needrm);
+    if(cub_needrm.size() > 0) kdtree_delete_counter = ikdtree->Delete_Point_Boxes(cub_needrm);
     kdtree_delete_time = omp_get_wtime() - delete_begin;
 }
 
@@ -377,8 +365,8 @@ void FastLioFilter::map_incremental()
     }
 
     double st_time = omp_get_wtime();
-    add_point_size = ikdtree.Add_Points(PointToAdd, true);
-    ikdtree.Add_Points(PointNoNeedDownsample, false); 
+    add_point_size = ikdtree->Add_Points(PointToAdd, true);
+    ikdtree->Add_Points(PointNoNeedDownsample, false); 
     add_point_size = PointToAdd.size() + PointNoNeedDownsample.size();
     kdtree_incremental_time = omp_get_wtime() - st_time;
 }
@@ -584,7 +572,7 @@ void FastLioFilter::h_share_model_nonstatic(state_ikfom &s, esekfom::dyn_share_d
         if (ekfom_data.converge)
         {
             /** Find the closest surfaces in the map **/
-            ikdtree.Nearest_Search(point_world, NUM_MATCH_POINTS, points_near, pointSearchSqDis);
+            ikdtree->Nearest_Search(point_world, NUM_MATCH_POINTS, points_near, pointSearchSqDis);
             point_selected_surf[i] = points_near.size() < NUM_MATCH_POINTS ? false : pointSearchSqDis[NUM_MATCH_POINTS - 1] > 5 ? false : true;
         }
 
@@ -826,22 +814,22 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
             t1 = omp_get_wtime();
             feats_down_size = feats_down_body->points.size();
             /*** initialize the map kdtree ***/
-            if(ikdtree.Root_Node == nullptr)
+            if(ikdtree->Root_Node == nullptr)
             {
                 if(feats_down_size > 5)
                 {
-                    ikdtree.set_downsample_param(filter_size_map_min);
+                    ikdtree->set_downsample_param(filter_size_map_min);
                     feats_down_world->resize(feats_down_size);
                     for(int i = 0; i < feats_down_size; i++)
                     {
                         pointBodyToWorld(&(feats_down_body->points[i]), &(feats_down_world->points[i]));
                     }
-                    ikdtree.Build(feats_down_world->points);
+                    ikdtree->Build(feats_down_world->points);
                 }
                 continue;
             }
-            int featsFromMapNum = ikdtree.validnum();
-            kdtree_size_st = ikdtree.size();
+            int featsFromMapNum = ikdtree->validnum();
+            kdtree_size_st = ikdtree->size();
             
             // cout<<"[ mapping ]: In num: "<<feats_undistort->points.size()<<" downsamp "<<feats_down_size<<" Map num: "<<featsFromMapNum<<"effect num:"<<effct_feat_num<<endl;
 
@@ -861,10 +849,10 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
 
             if(0) // If you need to see map point, change to "if(1)"
             {
-                PointVector ().swap(ikdtree.PCL_Storage);
-                ikdtree.flatten(ikdtree.Root_Node, ikdtree.PCL_Storage, NOT_RECORD);
+                PointVector ().swap(ikdtree->PCL_Storage);
+                ikdtree->flatten(ikdtree->Root_Node, ikdtree->PCL_Storage, NOT_RECORD);
                 featsFromMap->clear();
-                featsFromMap->points = ikdtree.PCL_Storage;
+                featsFromMap->points = ikdtree->PCL_Storage;
             }
 
             pointSearchInd_surf.resize(feats_down_size);
@@ -907,7 +895,7 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
             if (runtime_pos_log)
             {
                 frame_num ++;
-                kdtree_size_end = ikdtree.size();
+                kdtree_size_end = ikdtree->size();
                 aver_time_consu = aver_time_consu * (frame_num - 1) / frame_num + (t5 - t0) / frame_num;
                 aver_time_icp = aver_time_icp * (frame_num - 1)/frame_num + (t_update_end - t_update_start) / frame_num;
                 aver_time_match = aver_time_match * (frame_num - 1)/frame_num + (match_time)/frame_num;

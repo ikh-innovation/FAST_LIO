@@ -112,103 +112,10 @@ class FastLioFilter
     // void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_data);
     int run_lio(ros::NodeHandle nh);
 
-    // private:
-
-    // bool halt = 0;
-    // /*** Time Log Variables ***/
-    // double kdtree_incremental_time = 0.0, kdtree_search_time = 0.0, kdtree_delete_time = 0.0;
-    // double T1[MAXN], s_plot[MAXN], s_plot2[MAXN], s_plot3[MAXN], s_plot4[MAXN], s_plot5[MAXN], s_plot6[MAXN], s_plot7[MAXN], s_plot8[MAXN], s_plot9[MAXN], s_plot10[MAXN], s_plot11[MAXN];
-    // double match_time = 0, solve_time = 0, solve_const_H_time = 0;
-    // int    kdtree_size_st = 0, kdtree_size_end = 0, add_point_size = 0, kdtree_delete_counter = 0;
-    // bool   runtime_pos_log = false, pcd_save_en = false, time_sync_en = false, extrinsic_est_en = true, path_en = true;
-    // /**************************/
-
-    // float res_last[100000] = {0.0};
-    // float DET_RANGE = 300.0f;
-    // const float MOV_THRESHOLD = 1.5f;
-    // double time_diff_lidar_to_imu = 0.0;
-
-    // mutex mtx_buffer;
-    // condition_variable sig_buffer;
-
-    // string root_dir = ROOT_DIR;
-    // string map_file_path, lid_topic, imu_topic, init_frame, body_frame;
-
-    // double res_mean_last = 0.05, total_residual = 0.0;
-    // double last_timestamp_lidar = 0, last_timestamp_imu = -1.0;
-    // double gyr_cov = 0.1, acc_cov = 0.1, b_gyr_cov = 0.0001, b_acc_cov = 0.0001;
-    // double filter_size_corner_min = 0, filter_size_surf_min = 0, filter_size_map_min = 0, fov_deg = 0;
-    // double cube_len = 0, HALF_FOV_COS = 0, FOV_DEG = 0, total_distance = 0, lidar_end_time = 0, first_lidar_time = 0.0;
-    // int    effct_feat_num = 0, time_log_counter = 0, scan_count = 0, publish_count = 0;
-    // int    iterCount = 0, feats_down_size = 0, NUM_MAX_ITERATIONS = 0, laserCloudValidNum = 0, pcd_save_interval = -1, pcd_index = 0;
-    // bool   point_selected_surf[100000] = {0};
-    // bool   lidar_pushed, flg_first_scan = true, flg_exit = false, flg_EKF_inited;
-    // bool   scan_pub_en = false, dense_pub_en = false, scan_body_pub_en = false, publish_tf = false;
-    // int lidar_type;
-
-    // vector<vector<int>>  pointSearchInd_surf; 
-    // vector<BoxPointType> cub_needrm;
-    // vector<PointVector>  Nearest_Points; 
-    // vector<double>       extrinT(3, 0.0);
-    // vector<double>       extrinR(9, 0.0);
-    // deque<double>                     time_buffer;
-    // deque<PointCloudXYZI::Ptr>        lidar_buffer;
-    // deque<sensor_msgs::Imu::ConstPtr> imu_buffer;
-
-    // PointCloudXYZI::Ptr featsFromMap(new PointCloudXYZI());
-    // PointCloudXYZI::Ptr feats_undistort(new PointCloudXYZI());
-    // PointCloudXYZI::Ptr feats_down_body(new PointCloudXYZI());
-    // PointCloudXYZI::Ptr feats_down_world(new PointCloudXYZI());
-    // PointCloudXYZI::Ptr normvec(new PointCloudXYZI(100000, 1));
-    // PointCloudXYZI::Ptr laserCloudOri(new PointCloudXYZI(100000, 1));
-    // PointCloudXYZI::Ptr corr_normvect(new PointCloudXYZI(100000, 1));
-    // PointCloudXYZI::Ptr _featsArray;
-
-    // pcl::VoxelGrid<PointType> downSizeFilterSurf;
-    // pcl::VoxelGrid<PointType> downSizeFilterMap;
-
-    // KD_TREE<PointType> ikdtree;
-
-    // V3F XAxisPoint_body(LIDAR_SP_LEN, 0.0, 0.0);
-    // V3F XAxisPoint_world(LIDAR_SP_LEN, 0.0, 0.0);
-    // V3D euler_cur;
-    // V3D position_last(Zero3d);
-    // V3D Lidar_T_wrt_IMU(Zero3d);
-    // M3D Lidar_R_wrt_IMU(Eye3d);
-
-    // /*** EKF inputs and output ***/
-    // MeasureGroup Measures;
-    // esekfom::esekf<state_ikfom, 12, input_ikfom> kf;
-    // state_ikfom state_point;
-    // vect3 pos_lid;
-
-    // nav_msgs::Path path;
-    // nav_msgs::Odometry odomAftMapped;
-    // geometry_msgs::Quaternion geoQuat;
-    // geometry_msgs::PoseStamped msg_body_pose;
-
-    // shared_ptr<Preprocess> p_pre(new Preprocess());
-    // shared_ptr<ImuProcess> p_imu(new ImuProcess());
-
-    // BoxPointType LocalMap_Points;
-    // bool Localmap_Initialized = false; 
-
-    // double timediff_lidar_wrt_imu = 0.0;
-    // bool   timediff_set_flg = false;
-
-    // double lidar_mean_scantime = 0.0;
-    // int    scan_num = 0;
-
-    // int process_increments = 0;
-
-    // PointCloudXYZI::Ptr pcl_wait_pub(new PointCloudXYZI(500000, 1));
-    // PointCloudXYZI::Ptr pcl_wait_save(new PointCloudXYZI());
-
     private:
     bool halt;
     double kdtree_incremental_time, kdtree_search_time, kdtree_delete_time;
-    double T1[MAXN], s_plot[MAXN], s_plot2[MAXN], s_plot3[MAXN], s_plot4[MAXN], s_plot5[MAXN], s_plot6[MAXN], s_plot7[MAXN], s_plot8[MAXN], s_plot9[MAXN], s_plot10[MAXN], s_plot11[MAXN];
-    double match_time, solve_time, solve_const_H_time;
+    std::vector<double> T1, s_plot, s_plot2, s_plot3, s_plot4, s_plot5, s_plot6, s_plot7, s_plot8, s_plot9, s_plot10, s_plot11;    double match_time, solve_time, solve_const_H_time;
     int kdtree_size_st, kdtree_size_end, add_point_size, kdtree_delete_counter;
     bool runtime_pos_log, pcd_save_en, time_sync_en, extrinsic_est_en, path_en;
     
@@ -259,7 +166,8 @@ class FastLioFilter
     pcl::VoxelGrid<PointType> downSizeFilterSurf;
     pcl::VoxelGrid<PointType> downSizeFilterMap;
 
-    KD_TREE<PointType> ikdtree;
+    // KD_TREE<PointType> ikdtree;
+    std::shared_ptr<KD_TREE<PointType>> ikdtree;
 
     V3F XAxisPoint_body;
     V3F XAxisPoint_world;

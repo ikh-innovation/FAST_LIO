@@ -1,0 +1,37 @@
+<launch>
+
+    <arg name="lidar_topic" default="/aristos/livox/lidar" />
+    <arg name="imu_raw_topic" default="/aristos/imu/data" />
+    <arg name="odom_frame" default="aristos_odom" />
+    <arg name="body_frame" default="aristos_base_footprint" />
+
+    <arg name="imu_topic" default="imu/data/relative" />
+    <arg name="wheel_topic" default="wheel/odom" />
+    <arg name="imu_tactic_topic" default="imu/data/tactic"/>
+    <arg name="imu_relay_topic" default="imu/data_relay" />
+    <arg name="wheel_relay_topic" default="wheel/odom_relay" />
+    <arg name="imu_tactic_relay_topic" default="imu/data/tactic_relay"/>
+    <arg name="onlyRTK_topic" default="odometry/gps/onlyRTK" />
+    <arg name="twist_mux_navigation_lock" default="/aristos/navigation_pause" />
+    <arg name="twist_mux_roboteq_flush" default="/aristos/aristos_base_control/roboteq_flush" />
+
+    <arg name="localization_relay" default="false" />
+    <arg name="lio_strategic_resetter" default="false" />
+    <arg name="lio_switch_handler" default="false" />
+    <arg name="lio_explosion_handler" default="false" />
+
+    <group ns="aristos">
+
+        <rosparam file="$(find aristos_localization)/lio/config/mid360.yaml"  command="load" subst_value="True">
+            <param name="lidar_topic" value="$(arg lidar_topic)" />
+            <param name="imu_raw_topic" value="$(arg imu_raw_topic)" />
+            <param name="odom_frame" value="$(arg odom_frame)" />
+            <param name="body_frame" value="$(arg body_frame)" />
+        </rosparam>
+
+        <!-- <node pkg="fast_lio" type="fastlio_mapping" name="laserMapping" output="screen" />  -->
+        <node pkg="fast_lio" type="fastlio_mapping_halt" name="laserMapping" output="screen" /> 
+    </group>
+
+
+</launch>

@@ -17,7 +17,7 @@ FastLioFilter::FastLioFilter()
       cube_len(0), HALF_FOV_COS(0), FOV_DEG(0), total_distance(0), lidar_end_time(0), first_lidar_time(0),
       effct_feat_num(0), time_log_counter(0), scan_count(0), publish_count(0),
       iterCount(0), feats_down_size(0), NUM_MAX_ITERATIONS(0), laserCloudValidNum(0), pcd_save_interval(-1), pcd_index(0),
-      lidar_pushed(false), flg_first_scan(true), flg_exit(false), flg_EKF_inited(false),
+      lidar_pushed(false), flg_first_scan(true), flg_EKF_inited(false),
       scan_pub_en(false), dense_pub_en(false), scan_body_pub_en(false), publish_tf(false),
       lidar_type(0),
       extrinT(3, 0.0), extrinR(9, 0.0),
@@ -39,6 +39,7 @@ FastLioFilter::FastLioFilter()
       T1(MAXN), s_plot(MAXN), s_plot2(MAXN), s_plot3(MAXN), s_plot4(MAXN), s_plot5(MAXN),s_plot6(MAXN), s_plot7(MAXN), s_plot8(MAXN), s_plot9(MAXN), s_plot10(MAXN), s_plot11(MAXN)
 {
     ikdtree = std::make_shared<KD_TREE<PointType>>();
+    flg_exit.store(false);
 }
 FastLioFilter::~FastLioFilter(){};
 
@@ -47,7 +48,7 @@ void FastLioFilter::SigHandle(int sig) {
 }
 
 void FastLioFilter::handle_signal(int sig) {
-    flg_exit = true;
+    flg_exit.store(true);
     ROS_WARN("catch sig %d", sig);
     sig_buffer.notify_all();
 }
@@ -772,7 +773,7 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
     bool status = ros::ok();
     while (status)
     {
-        if (flg_exit) break;
+        if (flg_exit.load()) break;
         ros::spinOnce();
         if(sync_packages(Measures)) 
         {
@@ -962,12 +963,79 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
     return 0;
 }
 
+void FastLioFilter::set_halt(bool halt)
+{
+    flg_exit.store(halt);
+    ROS_WARN("Stopping lio...");
+}
+
+
+// Global variables
+std::unique_ptr<FastLioFilter> lio_instance;
+std::mutex lio_mutex;
+std::atomic<bool> halt{false};
+
+
+bool handleHaltLio(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res) {
+    if (req.data) 
+    {
+        halt.store(true);
+        if (lio_instance)
+        {
+            {
+                std::lock_guard<std::mutex> lock(lio_mutex);
+                lio_instance->set_halt(true);
+            }
+            ROS_INFO("Lio halting requested.");
+            res.success = true;
+            res.message = "Lio halting requested.";
+        }
+        else
+        {
+            ROS_INFO("Lio halt requested but no lio instance is running.");
+            res.success = true;
+            res.message = "Lio halt requested but no lio instance is running.";
+        }
+    }
+    else
+    {
+        halt.store(false);
+        ROS_INFO("Lio release requested.");
+        res.success = true;
+        res.message = "Lio release requested.";
+    }
+    return true;
+}
+
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "laserMapping");
     ros::NodeHandle nh;
-    FastLioFilter lio;
-    lio.run_lio(nh);
+
+    ros::ServiceServer service = nh.advertiseService("halt_lio", handleHaltLio);
+    ROS_INFO("Service 'halt_lio' is ready.");
+
+
+    while (ros::ok())
+    {
+        if(!halt.load())
+        {
+            {
+                std::lock_guard<std::mutex> lock(lio_mutex);
+                lio_instance = std::make_unique<FastLioFilter>(); //TODO: check initialization 
+            }
+            lio_instance->run_lio(nh);
+            {
+                std::lock_guard<std::mutex> lock(lio_mutex);
+                lio_instance.reset();
+            }
+        }
+        else
+        {
+            ros::Duration(0.2).sleep();
+        }
+        ros::spinOnce();
+    }
 
     return 0;
 }

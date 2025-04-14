@@ -111,6 +111,7 @@ class FastLioFilter
 
     // void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_data);
     int run_lio(ros::NodeHandle nh);
+    void set_halt(bool halt);
 
     private:
     bool halt;
@@ -140,8 +141,9 @@ class FastLioFilter
     int iterCount, feats_down_size, NUM_MAX_ITERATIONS, laserCloudValidNum, pcd_save_interval, pcd_index;
 
     bool point_selected_surf[100000];
-    bool lidar_pushed, flg_first_scan, flg_exit, flg_EKF_inited;
+    bool lidar_pushed, flg_first_scan, flg_EKF_inited;
     bool scan_pub_en, dense_pub_en, scan_body_pub_en, publish_tf;
+    std::atomic<bool> flg_exit;
 
     int lidar_type;
 

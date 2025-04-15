@@ -20,13 +20,11 @@
     <arg name="lio_switch_handler" default="false" />
     <arg name="lio_explosion_handler" default="false" />
 
+    <arg name="ekf_global_output_topic" default="ekf/global/pose_estimation" />   
+
     <group ns="aristos">
 
         <rosparam file="$(find aristos_localization)/lio/config/mid360.yaml"  command="load" subst_value="True">
-            <param name="lidar_topic" value="$(arg lidar_topic)" />
-            <param name="imu_raw_topic" value="$(arg imu_raw_topic)" />
-            <param name="odom_frame" value="$(arg odom_frame)" />
-            <param name="body_frame" value="$(arg body_frame)" />
         </rosparam>
 
         <!-- <node pkg="fast_lio" type="fastlio_mapping" name="laserMapping" output="screen" />  -->

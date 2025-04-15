@@ -2,7 +2,7 @@
 
 FastLioFilter* FastLioFilter::instance = nullptr; 
 
-FastLioFilter::FastLioFilter()
+FastLioFilter::FastLioFilter(const geometry_msgs::Pose& initial_pose)
     : halt(false),
       kdtree_incremental_time(0.0), kdtree_search_time(0.0), kdtree_delete_time(0.0),
       match_time(0.0), solve_time(0.0), solve_const_H_time(0.0),
@@ -36,7 +36,8 @@ FastLioFilter::FastLioFilter()
       lidar_mean_scantime(0.0), scan_num(0), process_increments(0),
       pcl_wait_pub(new PointCloudXYZI(500000, 1)),
       pcl_wait_save(new PointCloudXYZI()),
-      T1(MAXN), s_plot(MAXN), s_plot2(MAXN), s_plot3(MAXN), s_plot4(MAXN), s_plot5(MAXN),s_plot6(MAXN), s_plot7(MAXN), s_plot8(MAXN), s_plot9(MAXN), s_plot10(MAXN), s_plot11(MAXN)
+      T1(MAXN), s_plot(MAXN), s_plot2(MAXN), s_plot3(MAXN), s_plot4(MAXN), s_plot5(MAXN),s_plot6(MAXN), s_plot7(MAXN), s_plot8(MAXN), s_plot9(MAXN), s_plot10(MAXN), s_plot11(MAXN),
+      initial_state(initial_pose)
 {
     ikdtree = std::make_shared<KD_TREE<PointType>>();
     flg_exit.store(false);
@@ -470,17 +471,39 @@ void FastLioFilter::publish_map(const ros::Publisher & pubLaserCloudMap)
     pubLaserCloudMap.publish(laserCloudMap);
 }
 
+// template<typename T>
+// void FastLioFilter::set_posestamp(T & out)
+// {
+//     out.pose.position.x = initial_state.position.x + state_point.pos(0);
+//     out.pose.position.y = initial_state.position.y + state_point.pos(1);
+//     out.pose.position.z = initial_state.position.z + state_point.pos(2);
+//     out.pose.orientation.x = geoQuat.x;
+//     out.pose.orientation.y = geoQuat.y;
+//     out.pose.orientation.z = geoQuat.z;
+//     out.pose.orientation.w = geoQuat.w;
+    
+// }
+
 template<typename T>
 void FastLioFilter::set_posestamp(T & out)
 {
-    out.pose.position.x = state_point.pos(0);
-    out.pose.position.y = state_point.pos(1);
-    out.pose.position.z = state_point.pos(2);
-    out.pose.orientation.x = geoQuat.x;
-    out.pose.orientation.y = geoQuat.y;
-    out.pose.orientation.z = geoQuat.z;
-    out.pose.orientation.w = geoQuat.w;
-    
+    // Convert initial_state.orientation (geometry_msgs) to tf2 Quaternion
+    tf2::Quaternion q_init, q_state, q_final;
+    tf2::fromMsg(initial_state.orientation, q_init);
+    q_state = tf2::Quaternion(geoQuat.x, geoQuat.y, geoQuat.z, geoQuat.w);
+
+    // Combine orientations (q_final = q_init * q_state)
+    // This means apply state rotation **after** initial rotation
+    q_final = q_init * q_state;
+    q_final.normalize();
+
+    // Add positions
+    out.pose.position.x = initial_state.position.x + state_point.pos(0);
+    out.pose.position.y = initial_state.position.y + state_point.pos(1);
+    out.pose.position.z = initial_state.position.z + state_point.pos(2);
+
+    // Set final orientation
+    out.pose.orientation = tf2::toMsg(q_final);
 }
 
 void FastLioFilter::publish_odometry(const ros::Publisher & pubOdomAftMapped)
@@ -1012,9 +1035,14 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "laserMapping");
     ros::NodeHandle nh;
 
+    bool init_from_topic;
+    nh.param<bool>("halt/initialize_from_topic", init_from_topic, false);
+
+    string localization_topic;
+    nh.param<string>("halt/localization_topic", localization_topic, "ekf/global/pose_estimation");
+
     ros::ServiceServer service = nh.advertiseService("halt_lio", handleHaltLio);
     ROS_INFO("Service 'halt_lio' is ready.");
-
 
     while (ros::ok())
     {
@@ -1022,7 +1050,23 @@ int main(int argc, char** argv)
         {
             {
                 std::lock_guard<std::mutex> lock(lio_mutex);
-                lio_instance = std::make_unique<FastLioFilter>(); //TODO: check initialization 
+                if (init_from_topic)
+                {
+                    nav_msgs::OdometryConstPtr initial_odom = ros::topic::waitForMessage<nav_msgs::Odometry>(localization_topic, ros::Duration(2));
+                    if (initial_odom == NULL)
+                    {
+                        ROS_WARN("No odometry messages received on topic %s. Initializing fast lio to zero.", localization_topic.c_str());
+                        lio_instance = std::make_unique<FastLioFilter>();
+                    }
+                    else
+                    {
+                        lio_instance = std::make_unique<FastLioFilter>(initial_odom->pose.pose);
+                    }
+                }
+                else
+                {
+                    lio_instance = std::make_unique<FastLioFilter>();
+                }
             }
             lio_instance->run_lio(nh);
             {

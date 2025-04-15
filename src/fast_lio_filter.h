@@ -60,10 +60,13 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/Pose.h>
 #include <livox_ros_driver2/CustomMsg.h>
 #include "preprocess.h"
 #include <ikd-Tree/ikd_Tree.h>
 #include <std_srvs/SetBool.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #define INIT_TIME           (0.1)
 #define LASER_POINT_COV     (0.001)
@@ -77,7 +80,7 @@ class FastLioFilter
     public:
 //   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    FastLioFilter();
+    FastLioFilter(const geometry_msgs::Pose& initial_pose = getZeroPose());
     ~FastLioFilter();
 
     // void SigHandle(int sig);
@@ -187,6 +190,7 @@ class FastLioFilter
     nav_msgs::Odometry odomAftMapped;
     geometry_msgs::Quaternion geoQuat;
     geometry_msgs::PoseStamped msg_body_pose;
+    geometry_msgs::Pose initial_state;
 
     std::shared_ptr<Preprocess> p_pre;
     std::shared_ptr<ImuProcess> p_imu;
@@ -204,5 +208,18 @@ class FastLioFilter
 
     PointCloudXYZI::Ptr pcl_wait_pub;
     PointCloudXYZI::Ptr pcl_wait_save;
+
+    static geometry_msgs::Pose getZeroPose()
+    {
+        geometry_msgs::Pose pose;
+        pose.position.x = 0.0;
+        pose.position.y = 0.0;
+        pose.position.z = 0.0;
+        pose.orientation.x = 0.0;
+        pose.orientation.y = 0.0;
+        pose.orientation.z = 0.0;
+        pose.orientation.w = 1.0;
+        return pose;
+    }
 };
 #endif

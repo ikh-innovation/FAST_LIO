@@ -67,6 +67,7 @@
 #include <std_srvs/SetBool.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <std_msgs/Bool.h>
 
 #define INIT_TIME           (0.1)
 #define LASER_POINT_COV     (0.001)
@@ -105,7 +106,7 @@ class FastLioFilter
     void publish_effect_world(const ros::Publisher & pubLaserCloudEffect);
     void publish_map(const ros::Publisher & pubLaserCloudMap);
     template<typename T> void set_posestamp(T & out);
-    void publish_odometry(const ros::Publisher & pubOdomAftMapped);
+    void publish_odometry(const ros::Publisher & pubOdomAftMapped, const ros::Publisher & pubLioState);
     void publish_path(const ros::Publisher pubPath);
 
     static FastLioFilter* instance;
@@ -115,6 +116,7 @@ class FastLioFilter
     // void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_data);
     int run_lio(ros::NodeHandle nh);
     void set_halt(bool halt);
+    bool has_jumped(const geometry_msgs::Pose& pose1, const geometry_msgs::Pose& pose2); 
 
     private:
     bool halt;
@@ -188,6 +190,7 @@ class FastLioFilter
 
     nav_msgs::Path path;
     nav_msgs::Odometry odomAftMapped;
+    nav_msgs::Odometry odomAftMappedPrv;
     geometry_msgs::Quaternion geoQuat;
     geometry_msgs::PoseStamped msg_body_pose;
     geometry_msgs::Pose initial_state;
@@ -208,6 +211,11 @@ class FastLioFilter
 
     PointCloudXYZI::Ptr pcl_wait_pub;
     PointCloudXYZI::Ptr pcl_wait_save;
+
+    bool check_for_jumps;
+    double jump_position_threshold, jump_orientation_threshold;
+    bool is_first_publish_odom;
+    bool jump_detected;
 
     static geometry_msgs::Pose getZeroPose()
     {

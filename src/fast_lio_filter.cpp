@@ -37,7 +37,9 @@ FastLioFilter::FastLioFilter(const geometry_msgs::Pose& initial_pose)
       pcl_wait_pub(new PointCloudXYZI(500000, 1)),
       pcl_wait_save(new PointCloudXYZI()),
       T1(MAXN), s_plot(MAXN), s_plot2(MAXN), s_plot3(MAXN), s_plot4(MAXN), s_plot5(MAXN),s_plot6(MAXN), s_plot7(MAXN), s_plot8(MAXN), s_plot9(MAXN), s_plot10(MAXN), s_plot11(MAXN),
-      initial_state(initial_pose)
+      initial_state(initial_pose),
+      is_first_publish_odom(true),
+      jump_detected(false)
 {
     ikdtree = std::make_shared<KD_TREE<PointType>>();
     flg_exit.store(false);
@@ -506,13 +508,31 @@ void FastLioFilter::set_posestamp(T & out)
     out.pose.orientation = tf2::toMsg(q_final);
 }
 
-void FastLioFilter::publish_odometry(const ros::Publisher & pubOdomAftMapped)
+void FastLioFilter::publish_odometry(const ros::Publisher & pubOdomAftMapped, const ros::Publisher & pubLioState)
 {
     odomAftMapped.header.frame_id = init_frame;
     odomAftMapped.child_frame_id = body_frame;
     odomAftMapped.header.stamp = ros::Time().fromSec(lidar_end_time);// ros::Time().fromSec(lidar_end_time);
     set_posestamp(odomAftMapped.pose);
-    pubOdomAftMapped.publish(odomAftMapped);
+
+    if (check_for_jumps)
+    {
+        jump_detected = has_jumped(odomAftMappedPrv.pose.pose, odomAftMapped.pose.pose);
+        if (jump_detected){
+            ROS_ERROR("FAST-LIO: jump detected. Stop publishing odometry.");
+            std_msgs::Bool lio_state_msg;
+            lio_state_msg.data = false;
+            pubLioState.publish(lio_state_msg); // publishing error state
+        }
+        else{
+            pubOdomAftMapped.publish(odomAftMapped);
+        }
+        odomAftMappedPrv = odomAftMapped;
+    }
+    else{
+        pubOdomAftMapped.publish(odomAftMapped);
+    }
+
     auto P = kf.get_P();
     for (int i = 0; i < 6; i ++)
     {
@@ -722,6 +742,9 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
     nh.param<int>("pcd_save/interval", pcd_save_interval, -1);
     nh.param<vector<double>>("mapping/extrinsic_T", extrinT, vector<double>());
     nh.param<vector<double>>("mapping/extrinsic_R", extrinR, vector<double>());
+    nh.param<bool>("jump/check_for_jumps", check_for_jumps, true);
+    nh.param<double>("jump/position_ths",jump_position_threshold,0.5);
+    nh.param<double>("jump/orientation_ths", jump_orientation_threshold, 0.52);
 
     p_pre->lidar_type = lidar_type;
     cout<<"p_pre->lidar_type "<<p_pre->lidar_type<<endl;
@@ -788,9 +811,14 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
             ("Laser_map", 100000);
     ros::Publisher pubOdomAftMapped = nh.advertise<nav_msgs::Odometry> 
             ("Odometry", 100000);
+    ros::Publisher pubLioState = nh.advertise<std_msgs::Bool> 
+            ("fast_lio_state", 10, true);
     ros::Publisher pubPath          = nh.advertise<nav_msgs::Path> 
             ("path", 100000);
 //------------------------------------------------------------------------------------------------------
+    std_msgs::Bool lio_state_msg;
+    lio_state_msg.data = true;
+    pubLioState.publish(lio_state_msg); // publishing normal state
     signal(SIGINT, FastLioFilter::SigHandle);
     ros::Rate rate(5000);
     bool status = ros::ok();
@@ -901,7 +929,7 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
             double t_update_end = omp_get_wtime();
 
             /******* Publish odometry *******/
-            publish_odometry(pubOdomAftMapped);
+            publish_odometry(pubOdomAftMapped, pubLioState);
 
             /*** add the feature points to map kdtree ***/
             t3 = omp_get_wtime();
@@ -990,6 +1018,50 @@ void FastLioFilter::set_halt(bool halt)
 {
     flg_exit.store(halt);
     ROS_WARN("Stopping lio...");
+}
+
+bool FastLioFilter::has_jumped(
+    const geometry_msgs::Pose& pose1,
+    const geometry_msgs::Pose& pose2)
+{
+    if(jump_detected)
+        return true;
+
+    if(is_first_publish_odom)
+    {
+        is_first_publish_odom = false;
+        return false;
+    }
+
+    // Convert poses to tf2 equivalents
+    tf2::Vector3 position1(pose1.position.x, pose1.position.y, pose1.position.z);
+    tf2::Vector3 position2(pose2.position.x, pose2.position.y, pose2.position.z);
+
+    // Compute position difference
+    double position_diff = (position1 - position2).length();
+    // std::cout << "=====================Position difference: " << position_diff << std::endl;
+
+    if (position_diff > jump_position_threshold) {
+        return true;
+    }
+
+    // Convert orientations to tf2 quaternions
+    tf2::Quaternion q1, q2;
+    tf2::fromMsg(pose1.orientation, q1);
+    tf2::fromMsg(pose2.orientation, q2);
+
+    // Compute the relative rotation
+    tf2::Quaternion q_rel = q1.inverse() * q2;
+    q_rel.normalize();
+
+    // Convert to angle-axis and get the angle
+    double angle = q_rel.getAngle();  // angle between orientations
+
+    if (angle > jump_orientation_threshold) {
+        return true;
+    }
+
+    return false;
 }
 
 

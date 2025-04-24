@@ -486,26 +486,35 @@ void FastLioFilter::publish_map(const ros::Publisher & pubLaserCloudMap)
     
 // }
 
+
 template<typename T>
 void FastLioFilter::set_posestamp(T & out)
 {
+    // Frame A: local ekf output
+    // Frame B: fast-lio odometry (starting point)
+    // Frame C: fast-lio base-link
+    // initial_state: pose of B in A
+    // state_point, geoQuat: pose of C in B
+    // out: pose of C in A
+
     // Convert initial_state.orientation (geometry_msgs) to tf2 Quaternion
-    tf2::Quaternion q_init, q_state, q_final;
-    tf2::fromMsg(initial_state.orientation, q_init);
-    q_state = tf2::Quaternion(geoQuat.x, geoQuat.y, geoQuat.z, geoQuat.w);
+    tf2::Quaternion q_AB, q_BC, q_AC;
+    tf2::fromMsg(initial_state.orientation, q_AB); // Rotation B in A
+    q_BC = tf2::Quaternion(geoQuat.x, geoQuat.y, geoQuat.z, geoQuat.w); // Rotation C in B
 
-    // Combine orientations (q_final = q_init * q_state)
-    // This means apply state rotation **after** initial rotation
-    q_final = q_init * q_state;
-    q_final.normalize();
+    // Compose rotations: q_AC = q_AB * q_BC
+    q_AC = q_AB * q_BC;
+    q_AC.normalize();
 
-    // Add positions
-    out.pose.position.x = initial_state.position.x + state_point.pos(0);
-    out.pose.position.y = initial_state.position.y + state_point.pos(1);
-    out.pose.position.z = initial_state.position.z + state_point.pos(2);
+    // Rotate state_point (translation C in B) into A frame
+    tf2::Vector3 t_BC(state_point.pos(0), state_point.pos(1), state_point.pos(2));
+    tf2::Vector3 t_BC_in_A = tf2::quatRotate(q_AB, t_BC); // t_BC rotated into A frame
 
-    // Set final orientation
-    out.pose.orientation = tf2::toMsg(q_final);
+    // Add positions to get position of C in A
+    out.pose.position.x = initial_state.position.x + t_BC_in_A.x();
+    out.pose.position.y = initial_state.position.y + t_BC_in_A.y();
+    out.pose.position.z = initial_state.position.z + t_BC_in_A.z();
+    out.pose.orientation = tf2::toMsg(q_AC);
 }
 
 void FastLioFilter::publish_odometry(const ros::Publisher & pubOdomAftMapped, const ros::Publisher & pubLioState)

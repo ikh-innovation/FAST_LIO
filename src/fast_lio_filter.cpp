@@ -43,6 +43,8 @@ FastLioFilter::FastLioFilter(const geometry_msgs::Pose& initial_pose)
 {
     ikdtree = std::make_shared<KD_TREE<PointType>>();
     flg_exit.store(false);
+    res_last.resize(100000, 0.0);
+    point_selected_surf.resize(100000, false);
 }
 FastLioFilter::~FastLioFilter(){};
 
@@ -771,13 +773,15 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
 
     _featsArray.reset(new PointCloudXYZI());
 
-    memset(point_selected_surf, true, sizeof(point_selected_surf));
-    memset(res_last, -1000.0f, sizeof(res_last));
+    std::fill(point_selected_surf.begin(), point_selected_surf.end(), true);
+    std::fill(res_last.begin(), res_last.end(), -1000.0f);
+
     downSizeFilterSurf.setLeafSize(filter_size_surf_min, filter_size_surf_min, filter_size_surf_min);
     downSizeFilterMap.setLeafSize(filter_size_map_min, filter_size_map_min, filter_size_map_min);
-    memset(point_selected_surf, true, sizeof(point_selected_surf));
-    memset(res_last, -1000.0f, sizeof(res_last));
 
+    std::fill(point_selected_surf.begin(), point_selected_surf.end(), true);
+    std::fill(res_last.begin(), res_last.end(), -1000.0f);
+    
     Lidar_T_wrt_IMU<<VEC_FROM_ARRAY(extrinT);
     Lidar_R_wrt_IMU<<MAT_FROM_ARRAY(extrinR);
     p_imu->set_extrinsic(Lidar_T_wrt_IMU, Lidar_R_wrt_IMU);

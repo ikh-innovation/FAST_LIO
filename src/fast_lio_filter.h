@@ -125,7 +125,8 @@ class FastLioFilter
     int kdtree_size_st, kdtree_size_end, add_point_size, kdtree_delete_counter;
     bool runtime_pos_log, pcd_save_en, time_sync_en, extrinsic_est_en, path_en;
     
-    float res_last[100000];
+    //float res_last[100000];
+    std::vector<float> res_last;
     float DET_RANGE;
     const float MOV_THRESHOLD;
 
@@ -145,7 +146,7 @@ class FastLioFilter
     int effct_feat_num, time_log_counter, scan_count, publish_count;
     int iterCount, feats_down_size, NUM_MAX_ITERATIONS, laserCloudValidNum, pcd_save_interval, pcd_index;
 
-    bool point_selected_surf[100000];
+    std::vector<bool> point_selected_surf;
     bool lidar_pushed, flg_first_scan, flg_EKF_inited;
     bool scan_pub_en, dense_pub_en, scan_body_pub_en, publish_tf;
     std::atomic<bool> flg_exit;

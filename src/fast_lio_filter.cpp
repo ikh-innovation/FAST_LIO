@@ -21,21 +21,21 @@ FastLioFilter::FastLioFilter(const geometry_msgs::Pose& initial_pose)
       scan_pub_en(false), dense_pub_en(false), scan_body_pub_en(false), publish_tf(false),
       lidar_type(0),
       extrinT(3, 0.0), extrinR(9, 0.0),
-      featsFromMap(new PointCloudXYZI()),
-      feats_undistort(new PointCloudXYZI()),
-      feats_down_body(new PointCloudXYZI()),
-      feats_down_world(new PointCloudXYZI()),
-      normvec(new PointCloudXYZI(100000, 1)),
-      laserCloudOri(new PointCloudXYZI(100000, 1)),
-      corr_normvect(new PointCloudXYZI(100000, 1)),
-      XAxisPoint_body(LIDAR_SP_LEN, 0.0, 0.0),
+      featsFromMap(boost::make_shared<PointCloudXYZI>()),
+      feats_undistort(boost::make_shared<PointCloudXYZI>()),
+      feats_down_body(boost::make_shared<PointCloudXYZI>()),
+      feats_down_world(boost::make_shared<PointCloudXYZI>()),
+      normvec(boost::make_shared<PointCloudXYZI>(100000, 1)),
+      laserCloudOri(boost::make_shared<PointCloudXYZI>(100000, 1)),
+      corr_normvect(boost::make_shared<PointCloudXYZI>(100000, 1)),      XAxisPoint_body(LIDAR_SP_LEN, 0.0, 0.0),
       XAxisPoint_world(LIDAR_SP_LEN, 0.0, 0.0),
       position_last(Zero3d), Lidar_T_wrt_IMU(Zero3d), Lidar_R_wrt_IMU(Eye3d),
-      p_pre(new Preprocess()), p_imu(new ImuProcess()),
+      p_pre(std::make_shared<Preprocess>()),
+      p_imu(std::make_shared<ImuProcess>()),
       Localmap_Initialized(false), timediff_lidar_wrt_imu(0.0), timediff_set_flg(false),
       lidar_mean_scantime(0.0), scan_num(0), process_increments(0),
-      pcl_wait_pub(new PointCloudXYZI(500000, 1)),
-      pcl_wait_save(new PointCloudXYZI()),
+      pcl_wait_pub(boost::make_shared<PointCloudXYZI>(500000, 1)),
+      pcl_wait_save(boost::make_shared<PointCloudXYZI>()),
       T1(MAXN), s_plot(MAXN), s_plot2(MAXN), s_plot3(MAXN), s_plot4(MAXN), s_plot5(MAXN),s_plot6(MAXN), s_plot7(MAXN), s_plot8(MAXN), s_plot9(MAXN), s_plot10(MAXN), s_plot11(MAXN),
       initial_state(initial_pose),
       is_first_publish_odom(true),
@@ -196,9 +196,9 @@ void FastLioFilter::standard_pcl_cbk(const sensor_msgs::PointCloud2::ConstPtr &m
         lidar_buffer.clear();
     }
 
-    PointCloudXYZI::Ptr  ptr(new PointCloudXYZI());
+    PointCloudXYZI::Ptr  ptr(boost::make_shared<PointCloudXYZI>());
     p_pre->process(msg, ptr);
-    lidar_buffer.push_back(ptr);
+    lidar_buffer.push_back(std::move(ptr));
     time_buffer.push_back(msg->header.stamp.toSec());
     last_timestamp_lidar = msg->header.stamp.toSec();
     s_plot11[scan_count] = omp_get_wtime() - preprocess_start_time;
@@ -230,9 +230,9 @@ void FastLioFilter::livox_pcl_cbk(const livox_ros_driver2::CustomMsg::ConstPtr &
         printf("Self sync IMU and LiDAR, time diff is %.10lf \n", timediff_lidar_wrt_imu);
     }
 
-    PointCloudXYZI::Ptr  ptr(new PointCloudXYZI());
+    PointCloudXYZI::Ptr  ptr(boost::make_shared<PointCloudXYZI>());
     p_pre->process(msg, ptr);
-    lidar_buffer.push_back(ptr);
+    lidar_buffer.push_back(std::move(ptr));
     time_buffer.push_back(last_timestamp_lidar);
     
     s_plot11[scan_count] = omp_get_wtime() - preprocess_start_time;
@@ -279,7 +279,7 @@ bool FastLioFilter::sync_packages(MeasureGroup &meas)
     /*** push a lidar scan ***/
     if(!lidar_pushed)
     {
-        meas.lidar = lidar_buffer.front();
+        meas.lidar = std::move(lidar_buffer.front());
         meas.lidar_beg_time = time_buffer.front();
 
 
@@ -414,7 +414,7 @@ void FastLioFilter::publish_frame_world(const ros::Publisher & pubLaserCloudFull
             RGBpointBodyToWorld(&feats_undistort->points[i], \
                                 &laserCloudWorld->points[i]);
         }
-        *pcl_wait_save += *laserCloudWorld;
+        *pcl_wait_save += std::move(*laserCloudWorld);
 
         static int scan_wait_num = 0;
         scan_wait_num ++;

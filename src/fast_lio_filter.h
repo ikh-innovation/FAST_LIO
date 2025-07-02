@@ -46,6 +46,7 @@
 #include <Python.h>
 #include <so3_math.h>
 #include <ros/ros.h>
+#include <memory>
 #include <Eigen/Core>
 #include "IMU_Processing.hpp"
 #include <nav_msgs/Odometry.h>
@@ -68,11 +69,12 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <std_msgs/Bool.h>
+#include <boost/make_shared.hpp>
 
-#define INIT_TIME           (0.1)
-#define LASER_POINT_COV     (0.001)
-#define MAXN                (720000)
-#define PUBFRAME_PERIOD     (20)
+constexpr double INIT_TIME = 0.1;
+constexpr double LASER_POINT_COV = 0.001;
+constexpr int MAXN = 720000;
+constexpr int PUBFRAME_PERIOD = 20;
 
 using namespace std;
 
@@ -125,7 +127,8 @@ class FastLioFilter
     int kdtree_size_st, kdtree_size_end, add_point_size, kdtree_delete_counter;
     bool runtime_pos_log, pcd_save_en, time_sync_en, extrinsic_est_en, path_en;
     
-    float res_last[100000];
+    //float res_last[100000];
+    std::vector<float> res_last;
     float DET_RANGE;
     const float MOV_THRESHOLD;
 
@@ -145,7 +148,7 @@ class FastLioFilter
     int effct_feat_num, time_log_counter, scan_count, publish_count;
     int iterCount, feats_down_size, NUM_MAX_ITERATIONS, laserCloudValidNum, pcd_save_interval, pcd_index;
 
-    bool point_selected_surf[100000];
+    std::vector<bool> point_selected_surf;
     bool lidar_pushed, flg_first_scan, flg_EKF_inited;
     bool scan_pub_en, dense_pub_en, scan_body_pub_en, publish_tf;
     std::atomic<bool> flg_exit;

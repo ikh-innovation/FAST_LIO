@@ -71,10 +71,10 @@
 #include <std_msgs/Bool.h>
 #include <boost/make_shared.hpp>
 
-#define INIT_TIME           (0.1)
-#define LASER_POINT_COV     (0.001)
-#define MAXN                (720000)
-#define PUBFRAME_PERIOD     (20)
+constexpr double INIT_TIME = 0.1;
+constexpr double LASER_POINT_COV = 0.001;
+constexpr int MAXN = 720000;
+constexpr int PUBFRAME_PERIOD = 20;
 
 using namespace std;
 

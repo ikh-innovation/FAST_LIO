@@ -187,7 +187,7 @@ void FastLioFilter::lasermap_fov_segment()
 
 void FastLioFilter::standard_pcl_cbk(const sensor_msgs::PointCloud2::ConstPtr &msg) 
 {
-    mtx_buffer.lock();
+    std::lock_guard<std::mutex> lock(mtx_buffer);
     scan_count ++;
     double preprocess_start_time = omp_get_wtime();
     if (msg->header.stamp.toSec() < last_timestamp_lidar)
@@ -202,13 +202,12 @@ void FastLioFilter::standard_pcl_cbk(const sensor_msgs::PointCloud2::ConstPtr &m
     time_buffer.push_back(msg->header.stamp.toSec());
     last_timestamp_lidar = msg->header.stamp.toSec();
     s_plot11[scan_count] = omp_get_wtime() - preprocess_start_time;
-    mtx_buffer.unlock();
     sig_buffer.notify_all();
 }
 
 void FastLioFilter::livox_pcl_cbk(const livox_ros_driver2::CustomMsg::ConstPtr &msg) 
 {
-    mtx_buffer.lock();
+    std::lock_guard<std::mutex> lock(mtx_buffer);
     double preprocess_start_time = omp_get_wtime();
     scan_count ++;
     if (msg->header.stamp.toSec() < last_timestamp_lidar)
@@ -236,7 +235,6 @@ void FastLioFilter::livox_pcl_cbk(const livox_ros_driver2::CustomMsg::ConstPtr &
     time_buffer.push_back(last_timestamp_lidar);
     
     s_plot11[scan_count] = omp_get_wtime() - preprocess_start_time;
-    mtx_buffer.unlock();
     sig_buffer.notify_all();
 }
 
@@ -255,7 +253,7 @@ void FastLioFilter::imu_cbk(const sensor_msgs::Imu::ConstPtr &msg_in)
 
     double timestamp = msg->header.stamp.toSec();
 
-    mtx_buffer.lock();
+    std::lock_guard<std::mutex> lock(mtx_buffer);
 
     if (timestamp < last_timestamp_imu)
     {
@@ -266,7 +264,6 @@ void FastLioFilter::imu_cbk(const sensor_msgs::Imu::ConstPtr &msg_in)
     last_timestamp_imu = timestamp;
 
     imu_buffer.push_back(msg);
-    mtx_buffer.unlock();
     sig_buffer.notify_all();
 }
 

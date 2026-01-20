@@ -1,0 +1,33 @@
+<launch>
+
+    <arg name="project" default="fast_lio"/>
+    <arg name="imu_topic" default="imu_correct"/>
+    <arg name="gps_topic" default="gps/fix"/>
+    <arg name="fast_lio_publish_tf" default="false" />
+    <arg name="global_ekf" default="true" />
+    <arg name="global_ekf_output_topic" default="odometry/navsat" />
+
+    <!-- <env name="ROSCONSOLE_CONFIG_FILE" value="$(find lio_sam)/launch/include/rosconsole/rosconsole_error.conf"/> -->
+    
+    <!-- EKF LOCAL (in case odom->base published be robot_localization and not laserMapping)--> 
+    <group unless="$(arg fast_lio_publish_tf)">
+        <node pkg="robot_localization" type="ekf_localization_node" output="screen" name="ekf_local" respawn="true">
+            <remap from="odometry/filtered" to="odometry/local" />
+        </node>
+    </group>
+
+    <!-- EKF GPS-->
+    <group if="$(arg global_ekf)">
+        <node pkg="robot_localization" type="ekf_localization_node" output="screen" name="ekf_gps" respawn="true">
+            <remap from="odometry/filtered" to="$(arg global_ekf_output_topic)" />
+        </node>
+    </group>
+
+    <!-- Navsat (in case odometry/gps is used and not odemetry/onlyRTK)-->
+    <!-- <node pkg="robot_localization" type="navsat_transform_node" output="screen" name="navsat" respawn="true">
+        <remap from="imu/data" to="$(arg imu_topic)" />
+        <remap from="gps/fix" to="$(arg gps_topic)" />
+        <remap from="odometry/filtered" to="odometry/navsat" />
+    </node> -->
+
+</launch>

@@ -532,6 +532,10 @@ void FastLioFilter::publish_odometry(const ros::Publisher & pubOdomAftMapped, co
             std_msgs::Bool lio_state_msg;
             lio_state_msg.data = false;
             pubLioState.publish(lio_state_msg); // publishing error state
+	    // Publish previous pose again to zero out velocity in the following ekf
+	    nav_msgs::Odometry fakeOdom{odomAftMappedPrv};
+	    fakeOdom.header.stamp = odomAftMapped.header.stamp;
+	    pubOdomAftMapped.publish(fakeOdom);
         }
         else{
             pubOdomAftMapped.publish(odomAftMapped);

@@ -526,12 +526,16 @@ void FastLioFilter::publish_odometry(const ros::Publisher & pubOdomAftMapped, co
 
     if (check_for_jumps)
     {
-        jump_detected = has_jumped(odomAftMappedPrv.pose.pose, odomAftMapped.pose.pose);
+        jump_detected = has_jumped(odomAftMappedPrv, odomAftMapped);
         if (jump_detected){
             ROS_ERROR("FAST-LIO: jump detected. Stop publishing odometry.");
             std_msgs::Bool lio_state_msg;
             lio_state_msg.data = false;
             pubLioState.publish(lio_state_msg); // publishing error state
+	    // Publish previous pose again to zero out velocity in the following ekf
+	    nav_msgs::Odometry fakeOdom{odomAftMappedPrv};
+	    fakeOdom.header.stamp = odomAftMapped.header.stamp;
+	    pubOdomAftMapped.publish(fakeOdom);
         }
         else{
             pubOdomAftMapped.publish(odomAftMapped);
@@ -1030,8 +1034,8 @@ void FastLioFilter::set_halt(bool halt)
 }
 
 bool FastLioFilter::has_jumped(
-    const geometry_msgs::Pose& pose1,
-    const geometry_msgs::Pose& pose2)
+    const nav_msgs::Odometry& odom1,
+    const nav_msgs::Odometry& odom2)
 {
     if(jump_detected)
         return true;
@@ -1042,22 +1046,32 @@ bool FastLioFilter::has_jumped(
         return false;
     }
 
+    // Time difference in seconds
+    double dt = (odom2.header.stamp - odom1.header.stamp).toSec();
+    // ROS_INFO("Time difference: %.6f seconds", dt);
+    if (dt < std::numeric_limits<double>::epsilon())
+    {
+        ROS_ERROR("Odometry time diffence is less than epsilon, returning jump detection");
+	return true;
+    }
+
     // Convert poses to tf2 equivalents
-    tf2::Vector3 position1(pose1.position.x, pose1.position.y, pose1.position.z);
-    tf2::Vector3 position2(pose2.position.x, pose2.position.y, pose2.position.z);
+    tf2::Vector3 position1(odom1.pose.pose.position.x, odom1.pose.pose.position.y, odom1.pose.pose.position.z);
+    tf2::Vector3 position2(odom2.pose.pose.position.x, odom2.pose.pose.position.y, odom2.pose.pose.position.z);
 
     // Compute position difference
     double position_diff = (position1 - position2).length();
+    const double position_speed{position_diff/dt};
     // std::cout << "=====================Position difference: " << position_diff << std::endl;
 
-    if (position_diff > jump_position_threshold) {
+    if (position_speed > jump_position_threshold) {
         return true;
     }
 
     // Convert orientations to tf2 quaternions
     tf2::Quaternion q1, q2;
-    tf2::fromMsg(pose1.orientation, q1);
-    tf2::fromMsg(pose2.orientation, q2);
+    tf2::fromMsg(odom1.pose.pose.orientation, q1);
+    tf2::fromMsg(odom2.pose.pose.orientation, q2);
 
     // Compute the relative rotation
     tf2::Quaternion q_rel = q1.inverse() * q2;
@@ -1065,8 +1079,9 @@ bool FastLioFilter::has_jumped(
 
     // Convert to angle-axis and get the angle
     double angle = q_rel.getAngle();  // angle between orientations
+    const double angle_speed{angle/dt};
 
-    if (angle > jump_orientation_threshold) {
+    if (angle_speed > jump_orientation_threshold) {
         return true;
     }
 

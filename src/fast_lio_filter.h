@@ -216,6 +216,7 @@ class FastLioFilter
     double jump_position_threshold, jump_orientation_threshold;
     bool is_first_publish_odom;
     bool jump_detected;
+    bool fake_odom_published;
 
     static geometry_msgs::Pose getZeroPose()
     {

@@ -39,7 +39,8 @@ FastLioFilter::FastLioFilter(const geometry_msgs::Pose& initial_pose)
       T1(MAXN), s_plot(MAXN), s_plot2(MAXN), s_plot3(MAXN), s_plot4(MAXN), s_plot5(MAXN),s_plot6(MAXN), s_plot7(MAXN), s_plot8(MAXN), s_plot9(MAXN), s_plot10(MAXN), s_plot11(MAXN),
       initial_state(initial_pose),
       is_first_publish_odom(true),
-      jump_detected(false)
+      jump_detected(false),
+      fake_odom_published(false)
 {
     ikdtree = std::make_shared<KD_TREE<PointType>>();
     flg_exit.store(false);
@@ -532,10 +533,15 @@ void FastLioFilter::publish_odometry(const ros::Publisher & pubOdomAftMapped, co
             std_msgs::Bool lio_state_msg;
             lio_state_msg.data = false;
             pubLioState.publish(lio_state_msg); // publishing error state
-	    // Publish previous pose again to zero out velocity in the following ekf
-	    nav_msgs::Odometry fakeOdom{odomAftMappedPrv};
-	    fakeOdom.header.stamp = odomAftMapped.header.stamp;
-	    pubOdomAftMapped.publish(fakeOdom);
+            if (!fake_odom_published)
+            {
+                // Publish previous pose again to zero out velocity in the following ekf
+                nav_msgs::Odometry fakeOdom{odomAftMappedPrv};
+                fakeOdom.header.stamp = odomAftMapped.header.stamp;
+                pubOdomAftMapped.publish(fakeOdom);
+                fake_odom_published = true;
+                ROS_WARN("FAST-LIO: Published fake odometry once.");
+            }
         }
         else{
             pubOdomAftMapped.publish(odomAftMapped);

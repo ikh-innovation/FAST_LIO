@@ -116,7 +116,7 @@ class FastLioFilter
     // void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_data);
     int run_lio(ros::NodeHandle nh);
     void set_halt(bool halt);
-    bool has_jumped(const geometry_msgs::Pose& pose1, const geometry_msgs::Pose& pose2); 
+    bool has_jumped(const nav_msgs::Odometry& odom1, const nav_msgs::Odometry& odom); 
 
     private:
     bool halt;

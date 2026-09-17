@@ -545,8 +545,8 @@ void FastLioFilter::publish_odometry(const ros::Publisher & pubOdomAftMapped, co
         }
         else{
             pubOdomAftMapped.publish(odomAftMapped);
+			odomAftMappedPrv = odomAftMapped;
         }
-        odomAftMappedPrv = odomAftMapped;
     }
     else{
         pubOdomAftMapped.publish(odomAftMapped);

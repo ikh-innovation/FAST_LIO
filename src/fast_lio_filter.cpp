@@ -40,7 +40,12 @@ FastLioFilter::FastLioFilter(const geometry_msgs::Pose& initial_pose)
       initial_state(initial_pose),
       is_first_publish_odom(true),
       jump_detected(false),
-      fake_odom_published(false)
+      fake_odom_published(false),
+      reference_motion_received(false),
+      reference_motion_stamp(0.0),
+      reference_linear_velocity(Zero3d),
+      reference_angular_velocity(Zero3d),
+      odom_mismatch_streak(0)
 {
     ikdtree = std::make_shared<KD_TREE<PointType>>();
     flg_exit.store(false);
@@ -525,31 +530,38 @@ void FastLioFilter::publish_odometry(const ros::Publisher & pubOdomAftMapped, co
     odomAftMapped.header.stamp = ros::Time().fromSec(lidar_end_time);// ros::Time().fromSec(lidar_end_time);
     set_posestamp(odomAftMapped.pose);
 
+    bool instability_detected = false;
     if (check_for_jumps)
     {
         jump_detected = has_jumped(odomAftMappedPrv, odomAftMapped);
-        if (jump_detected){
-            ROS_ERROR("FAST-LIO: jump detected. Stop publishing odometry.");
-            std_msgs::Bool lio_state_msg;
-            lio_state_msg.data = false;
-            pubLioState.publish(lio_state_msg); // publishing error state
-            if (!fake_odom_published)
-            {
-                // Publish previous pose again to zero out velocity in the following ekf
-                nav_msgs::Odometry fakeOdom{odomAftMappedPrv};
-                fakeOdom.header.stamp = odomAftMapped.header.stamp;
-                pubOdomAftMapped.publish(fakeOdom);
-                fake_odom_published = true;
-                ROS_WARN("FAST-LIO: Published fake odometry once.");
-            }
-        }
-        else{
-            pubOdomAftMapped.publish(odomAftMapped);
-			odomAftMappedPrv = odomAftMapped;
+        instability_detected = jump_detected;
+    }
+    if (!instability_detected && check_odom_comparison)
+    {
+        instability_detected = has_odometry_mismatch(odomAftMappedPrv, odomAftMapped);
+        if (instability_detected) jump_detected = true; // latch, reuses the halt path below
+    }
+
+    if (instability_detected)
+    {
+        ROS_ERROR("FAST-LIO: instability detected. Stop publishing odometry.");
+        std_msgs::Bool lio_state_msg;
+        lio_state_msg.data = false;
+        pubLioState.publish(lio_state_msg); // publishing error state
+        if (!fake_odom_published)
+        {
+            // Publish previous pose again to zero out velocity in the following ekf
+            nav_msgs::Odometry fakeOdom{odomAftMappedPrv};
+            fakeOdom.header.stamp = odomAftMapped.header.stamp;
+            pubOdomAftMapped.publish(fakeOdom);
+            fake_odom_published = true;
+            ROS_WARN("FAST-LIO: Published fake odometry once.");
         }
     }
-    else{
+    else
+    {
         pubOdomAftMapped.publish(odomAftMapped);
+        odomAftMappedPrv = odomAftMapped;
     }
 
     auto P = kf.get_P();
@@ -764,6 +776,13 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
     nh.param<bool>("jump/check_for_jumps", check_for_jumps, true);
     nh.param<double>("jump/position_ths",jump_position_threshold,0.5);
     nh.param<double>("jump/orientation_ths", jump_orientation_threshold, 0.52);
+    nh.param<bool>("odom_comparison/enable", check_odom_comparison, false);
+    nh.param<string>("odom_comparison/topic", odom_comparison_topic, "");
+    nh.param<string>("odom_comparison/topic_type", odom_comparison_topic_type, "odometry");
+    nh.param<double>("odom_comparison/linear_vel_ths", odom_comparison_linear_vel_ths, 0.3);
+    nh.param<double>("odom_comparison/angular_vel_ths", odom_comparison_angular_vel_ths, 0.3);
+    nh.param<double>("odom_comparison/max_ref_age", odom_comparison_max_ref_age, 0.5);
+    nh.param<int>("odom_comparison/consecutive_mismatches", odom_comparison_consecutive_mismatches, 3);
 
     p_pre->lidar_type = lidar_type;
     cout<<"p_pre->lidar_type "<<p_pre->lidar_type<<endl;
@@ -820,6 +839,14 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
         nh.subscribe(lid_topic, 200000, &FastLioFilter::livox_pcl_cbk, this) : \
         nh.subscribe(lid_topic, 200000, &FastLioFilter::standard_pcl_cbk, this);
     ros::Subscriber sub_imu = nh.subscribe(imu_topic, 200000, &FastLioFilter::imu_cbk, this);
+    ros::Subscriber sub_odom_comparison;
+    if (check_odom_comparison)
+    {
+        if (odom_comparison_topic_type == "twist")
+            sub_odom_comparison = nh.subscribe(odom_comparison_topic, 10, &FastLioFilter::cmd_vel_cbk, this);
+        else
+            sub_odom_comparison = nh.subscribe(odom_comparison_topic, 10, &FastLioFilter::wheel_odom_cbk, this);
+    }
     ros::Publisher pubLaserCloudFull = nh.advertise<sensor_msgs::PointCloud2>
             ("cloud_registered", 100000);
     ros::Publisher pubLaserCloudFull_body = nh.advertise<sensor_msgs::PointCloud2>
@@ -1039,6 +1066,42 @@ void FastLioFilter::set_halt(bool halt)
     ROS_WARN("Stopping lio...");
 }
 
+bool FastLioFilter::compute_relative_velocity(
+    const nav_msgs::Odometry& odom1,
+    const nav_msgs::Odometry& odom2,
+    V3D& linear_velocity_body,
+    V3D& angular_velocity_body)
+{
+    // Time difference in seconds
+    double dt = (odom2.header.stamp - odom1.header.stamp).toSec();
+    if (dt < std::numeric_limits<double>::epsilon())
+    {
+        return false;
+    }
+
+    // Convert poses to tf2 equivalents
+    tf2::Vector3 position1(odom1.pose.pose.position.x, odom1.pose.pose.position.y, odom1.pose.pose.position.z);
+    tf2::Vector3 position2(odom2.pose.pose.position.x, odom2.pose.pose.position.y, odom2.pose.pose.position.z);
+
+    // Convert orientations to tf2 quaternions
+    tf2::Quaternion q1, q2;
+    tf2::fromMsg(odom1.pose.pose.orientation, q1);
+    tf2::fromMsg(odom2.pose.pose.orientation, q2);
+
+    // Rotate the world-frame displacement into the body frame at odom2
+    tf2::Vector3 diff_body = tf2::quatRotate(q2.inverse(), position2 - position1);
+    linear_velocity_body = V3D(diff_body.x(), diff_body.y(), diff_body.z()) / dt;
+
+    // Relative rotation, expressed in the body frame
+    tf2::Quaternion q_rel = q1.inverse() * q2;
+    q_rel.normalize();
+    tf2::Vector3 axis = q_rel.getAxis();
+    double angle = q_rel.getAngle();
+    angular_velocity_body = V3D(axis.x(), axis.y(), axis.z()) * (angle / dt);
+
+    return true;
+}
+
 bool FastLioFilter::has_jumped(
     const nav_msgs::Odometry& odom1,
     const nav_msgs::Odometry& odom2)
@@ -1052,46 +1115,73 @@ bool FastLioFilter::has_jumped(
         return false;
     }
 
-    // Time difference in seconds
-    double dt = (odom2.header.stamp - odom1.header.stamp).toSec();
-    // ROS_INFO("Time difference: %.6f seconds", dt);
-    if (dt < std::numeric_limits<double>::epsilon())
+    V3D linear_velocity_body, angular_velocity_body;
+    if (!compute_relative_velocity(odom1, odom2, linear_velocity_body, angular_velocity_body))
     {
         ROS_ERROR("Odometry time diffence is less than epsilon, returning jump detection");
-	return true;
-    }
-
-    // Convert poses to tf2 equivalents
-    tf2::Vector3 position1(odom1.pose.pose.position.x, odom1.pose.pose.position.y, odom1.pose.pose.position.z);
-    tf2::Vector3 position2(odom2.pose.pose.position.x, odom2.pose.pose.position.y, odom2.pose.pose.position.z);
-
-    // Compute position difference
-    double position_diff = (position1 - position2).length();
-    const double position_speed{position_diff/dt};
-    // std::cout << "=====================Position difference: " << position_diff << std::endl;
-
-    if (position_speed > jump_position_threshold) {
         return true;
     }
 
-    // Convert orientations to tf2 quaternions
-    tf2::Quaternion q1, q2;
-    tf2::fromMsg(odom1.pose.pose.orientation, q1);
-    tf2::fromMsg(odom2.pose.pose.orientation, q2);
+    if (linear_velocity_body.norm() > jump_position_threshold) {
+        return true;
+    }
 
-    // Compute the relative rotation
-    tf2::Quaternion q_rel = q1.inverse() * q2;
-    q_rel.normalize();
-
-    // Convert to angle-axis and get the angle
-    double angle = q_rel.getAngle();  // angle between orientations
-    const double angle_speed{angle/dt};
-
-    if (angle_speed > jump_orientation_threshold) {
+    if (angular_velocity_body.norm() > jump_orientation_threshold) {
         return true;
     }
 
     return false;
+}
+
+void FastLioFilter::cmd_vel_cbk(const geometry_msgs::Twist::ConstPtr &msg)
+{
+    reference_linear_velocity = V3D(msg->linear.x, msg->linear.y, msg->linear.z);
+    reference_angular_velocity = V3D(msg->angular.x, msg->angular.y, msg->angular.z);
+    reference_motion_stamp = ros::Time::now().toSec(); // Twist has no header
+    reference_motion_received = true;
+}
+
+void FastLioFilter::wheel_odom_cbk(const nav_msgs::Odometry::ConstPtr &msg)
+{
+    const auto &lin = msg->twist.twist.linear;
+    const auto &ang = msg->twist.twist.angular;
+    reference_linear_velocity = V3D(lin.x, lin.y, lin.z);
+    reference_angular_velocity = V3D(ang.x, ang.y, ang.z);
+    reference_motion_stamp = msg->header.stamp.toSec();
+    reference_motion_received = true;
+}
+
+bool FastLioFilter::has_odometry_mismatch(
+    const nav_msgs::Odometry& odom1,
+    const nav_msgs::Odometry& odom2)
+{
+    if (!reference_motion_received)
+    {
+        odom_mismatch_streak = 0;
+        return false;
+    }
+
+    if (fabs(odom2.header.stamp.toSec() - reference_motion_stamp) > odom_comparison_max_ref_age)
+    {
+        ROS_WARN_THROTTLE(5.0, "FAST-LIO: odometry comparison reference is stale, skipping check.");
+        odom_mismatch_streak = 0;
+        return false;
+    }
+
+    V3D lio_linear_velocity, lio_angular_velocity;
+    bool sample_mismatched;
+    if (!compute_relative_velocity(odom1, odom2, lio_linear_velocity, lio_angular_velocity))
+    {
+        sample_mismatched = true; // unusable dt, same fail-safe treatment as has_jumped
+    }
+    else
+    {
+        sample_mismatched = (lio_linear_velocity - reference_linear_velocity).norm() > odom_comparison_linear_vel_ths ||
+                             (lio_angular_velocity - reference_angular_velocity).norm() > odom_comparison_angular_vel_ths;
+    }
+
+    odom_mismatch_streak = sample_mismatched ? odom_mismatch_streak + 1 : 0;
+    return odom_mismatch_streak >= odom_comparison_consecutive_mismatches;
 }
 
 

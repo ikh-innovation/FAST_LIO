@@ -31,5 +31,14 @@ publish:
 
 pcd_save:
     pcd_save_en: true
-    interval: -1                 # how many LiDAR frames saved in each pcd file; 
+    interval: -1                 # how many LiDAR frames saved in each pcd file;
                                  # -1 : all frames will be saved in ONE pcd file, may lead to memory crash when having too much frames.
+
+odom_comparison:
+    enable: false                # true: compare LIO motion against an external reference topic and halt on mismatch
+    topic: "/wheel_odom"         # topic to compare against
+    topic_type: "odometry"       # "odometry" (nav_msgs/Odometry, uses twist.twist) or "twist" (geometry_msgs/Twist, e.g. cmd_vel)
+    linear_vel_ths: 0.3          # m/s, max allowed body-frame linear velocity vector difference
+    angular_vel_ths: 0.3         # rad/s, max allowed body-frame angular velocity vector difference
+    max_ref_age: 0.5             # seconds, ignore reference samples older than this
+    consecutive_mismatches: 3    # number of consecutive mismatched samples required before halting

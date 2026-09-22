@@ -61,6 +61,7 @@
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Twist.h>
 #include <livox_ros_driver2/CustomMsg.h>
 #include "preprocess.h"
 #include <ikd-Tree/ikd_Tree.h>
@@ -116,7 +117,12 @@ class FastLioFilter
     // void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_data);
     int run_lio(ros::NodeHandle nh);
     void set_halt(bool halt);
-    bool has_jumped(const nav_msgs::Odometry& odom1, const nav_msgs::Odometry& odom); 
+    bool has_jumped(const nav_msgs::Odometry& odom1, const nav_msgs::Odometry& odom);
+    void cmd_vel_cbk(const geometry_msgs::Twist::ConstPtr &msg);
+    void wheel_odom_cbk(const nav_msgs::Odometry::ConstPtr &msg);
+    bool compute_relative_velocity(const nav_msgs::Odometry& odom1, const nav_msgs::Odometry& odom2,
+                                    V3D& linear_velocity_body, V3D& angular_velocity_body);
+    bool has_odometry_mismatch(const nav_msgs::Odometry& odom1, const nav_msgs::Odometry& odom2);
 
     private:
     bool halt;
@@ -217,6 +223,21 @@ class FastLioFilter
     bool is_first_publish_odom;
     bool jump_detected;
     bool fake_odom_published;
+
+    // Odometry comparison (optional external motion source sanity check)
+    bool check_odom_comparison;
+    std::string odom_comparison_topic;
+    std::string odom_comparison_topic_type; // "twist" or "odometry"
+    double odom_comparison_linear_vel_ths;
+    double odom_comparison_angular_vel_ths;
+    double odom_comparison_max_ref_age;         // seconds; ignore stale reference samples
+    int odom_comparison_consecutive_mismatches; // required consecutive mismatched samples before halting
+
+    bool reference_motion_received;
+    double reference_motion_stamp;  // seconds
+    V3D reference_linear_velocity;  // m/s, body frame
+    V3D reference_angular_velocity; // rad/s, body frame
+    int odom_mismatch_streak;       // consecutive mismatched samples seen so far
 
     static geometry_msgs::Pose getZeroPose()
     {

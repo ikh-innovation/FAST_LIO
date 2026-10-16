@@ -1,4 +1,5 @@
 #include "fast_lio_filter.h"
+#include <ros/callback_queue.h>
 
 FastLioFilter* FastLioFilter::instance = nullptr; 
 
@@ -839,13 +840,17 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
     lio_state_msg.data = true;
     pubLioState.publish(lio_state_msg); // publishing normal state
     signal(SIGINT, FastLioFilter::SigHandle);
-    ros::Rate rate(5000);
     bool status = ros::ok();
+    bool scan_synced = false;
     while (status)
     {
         if (flg_exit.load()) break;
-        ros::spinOnce();
-        if(sync_packages(Measures)) 
+        // Wait up to 10 ms for new messages instead of polling at 5 kHz. Do not wait
+        // after a synced scan, since more scans may already be buffered.
+        ros::getGlobalCallbackQueue()->callAvailable(
+            scan_synced ? ros::WallDuration(0) : ros::WallDuration(0.01));
+        scan_synced = sync_packages(Measures);
+        if(scan_synced)
         {
             if (flg_first_scan)
             {
@@ -997,7 +1002,6 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
         }
 
         status = ros::ok();
-        rate.sleep();
     }
 
     /**************** save map ****************/

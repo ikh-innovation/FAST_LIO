@@ -1,4 +1,5 @@
 #include "fast_lio_filter.h"
+#include <ros/callback_queue.h>
 
 FastLioFilter* FastLioFilter::instance = nullptr; 
 
@@ -839,13 +840,17 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
     lio_state_msg.data = true;
     pubLioState.publish(lio_state_msg); // publishing normal state
     signal(SIGINT, FastLioFilter::SigHandle);
-    ros::Rate rate(5000);
     bool status = ros::ok();
+    bool scan_synced = false;
     while (status)
     {
         if (flg_exit.load()) break;
-        ros::spinOnce();
-        if(sync_packages(Measures)) 
+        // Wait up to 10 ms for new messages instead of polling at 5 kHz. Do not wait
+        // after a synced scan, since more scans may already be buffered.
+        ros::getGlobalCallbackQueue()->callAvailable(
+            scan_synced ? ros::WallDuration(0) : ros::WallDuration(0.01));
+        scan_synced = sync_packages(Measures);
+        if(scan_synced)
         {
             if (flg_first_scan)
             {
@@ -915,8 +920,11 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
             feats_down_world->resize(feats_down_size);
 
             V3D ext_euler = SO3ToEuler(state_point.offset_R_L_I);
-            fout_pre<<setw(20)<<Measures.lidar_beg_time - first_lidar_time<<" "<<euler_cur.transpose()<<" "<< state_point.pos.transpose()<<" "<<ext_euler.transpose() << " "<<state_point.offset_T_L_I.transpose()<< " " << state_point.vel.transpose() \
-            <<" "<<state_point.bg.transpose()<<" "<<state_point.ba.transpose()<<" "<<state_point.grav<< endl;
+            if (runtime_pos_log)
+            {
+                fout_pre<<setw(20)<<Measures.lidar_beg_time - first_lidar_time<<" "<<euler_cur.transpose()<<" "<< state_point.pos.transpose()<<" "<<ext_euler.transpose() << " "<<state_point.offset_T_L_I.transpose()<< " " << state_point.vel.transpose() \
+                <<" "<<state_point.bg.transpose()<<" "<<state_point.ba.transpose()<<" "<<state_point.grav<< endl;
+            }
 
             if(0) // If you need to see map point, change to "if(1)"
             {
@@ -994,7 +1002,6 @@ int FastLioFilter::run_lio(ros::NodeHandle nh)
         }
 
         status = ros::ok();
-        rate.sleep();
     }
 
     /**************** save map ****************/

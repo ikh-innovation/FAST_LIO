@@ -1,0 +1,56 @@
+name: Package Release Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Package Release Validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Validate metadata and release changelog
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          CHECK_PACKAGE_XML: "true"
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          import re
+          import xml.etree.ElementTree as ET
+
+          if os.environ["CHECK_PACKAGE_XML"] == "true":
+              root = ET.parse("package.xml").getroot()
+              if root.tag != "package":
+                  raise SystemExit("Invalid package.xml root element")
+              for field in ("name", "version", "description", "maintainer", "license"):
+                  if not (root.findtext(field) or "").strip():
+                      raise SystemExit("Missing package.xml field: " + field)
+              print("PASS: package.xml metadata")
+
+          changelog = Path("CHANGELOG.md")
+          if not changelog.is_file() or not changelog.read_text(encoding="utf-8").strip():
+              raise SystemExit("Missing or empty CHANGELOG.md")
+
+          head = os.environ["HEAD_REF"]
+          match = re.fullmatch(r"release/(v[0-9]+[.][0-9]+[.][0-9]+)", head)
+          if head.startswith("release/") and not match:
+              raise SystemExit("Expected release/vX.Y.Z branch name")
+          if match:
+              heading = "## [{}]".format(match.group(1))
+              lines = changelog.read_text(encoding="utf-8").splitlines()
+              if not any(line == heading or line.startswith(heading + " ") for line in lines):
+                  raise SystemExit("Missing changelog entry: " + heading)
+          print("PASS: changelog validation")
+          PY
